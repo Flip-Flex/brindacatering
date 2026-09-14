@@ -1,5 +1,7 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
+import { toast } from "sonner";
+import { useSiteSettings } from "@/hooks/useSiteSettings";
 import { PageHero } from "@/components/site/PageHero";
 import { GalleryGrid } from "@/components/site/GalleryGrid";
 import { FinalCTA } from "@/components/site/FinalCTA";
@@ -43,6 +45,15 @@ function GalleryPage() {
   const [filterId, setFilterId] = useState<string>("all");
   const [categories, setCategories] = useState<GalleryCategoryItem[]>([]);
   const [images, setImages] = useState<GalleryImage[]>([]);
+  const { settings, loading: settingsLoading } = useSiteSettings();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!settingsLoading && !settings.isGalleryEnabled) {
+      navigate({ to: "/" });
+      toast("The page you tried to access is now removed by admin.");
+    }
+  }, [settingsLoading, settings.isGalleryEnabled, navigate]);
 
   useEffect(() => {
     if (!db) return;
@@ -71,6 +82,10 @@ function GalleryPage() {
   const categoriesToRender = filterId === "all"
     ? categories
     : categories.filter(c => c.id === filterId);
+
+  if (settingsLoading || !settings.isGalleryEnabled) {
+    return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
+  }
 
   return (
     <>

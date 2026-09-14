@@ -3,6 +3,7 @@ import { Facebook, Instagram, Mail, MapPin, MessageCircle, Phone } from "lucide-
 import { business } from "@/data/business";
 import { mailLink, telLink, whatsAppLink } from "@/lib/whatsapp";
 import { CTALink } from "./CTAButton";
+import { useSiteSettings } from "@/hooks/useSiteSettings";
 
 const nav = [
   { to: "/", label: "Home" },
@@ -17,6 +18,11 @@ export function Footer() {
   const wa = whatsAppLink();
   const tel = telLink();
   const mail = mailLink();
+  const { settings } = useSiteSettings();
+
+  const visibleNav = nav.filter(item => 
+    item.to !== "/gallery" || settings.isGalleryEnabled
+  );
 
   return (
     <footer className="bg-ink text-primary-foreground border-t border-primary-foreground/10">
@@ -35,7 +41,7 @@ export function Footer() {
           <nav aria-label="Footer" className="lg:col-span-2">
             <h2 className="eyebrow text-primary-foreground/50 tracking-[0.2em]">Navigate</h2>
             <ul className="mt-8 space-y-4 text-sm">
-              {nav.map((item) => (
+              {visibleNav.map((item) => (
                 <li key={item.to}>
                   <Link
                     to={item.to}

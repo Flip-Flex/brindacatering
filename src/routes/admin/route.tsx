@@ -1,7 +1,8 @@
 import { createFileRoute, Outlet, Link } from '@tanstack/react-router';
-import { auth } from '@/lib/firebase';
+import { auth, db } from '@/lib/firebase';
+import { doc, getDoc } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
-import { LayoutDashboard, Utensils, Image, LogOut } from 'lucide-react';
+import { LayoutDashboard, Utensils, Image, LogOut, Settings, ClipboardList } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 export const Route = createFileRoute('/admin')({
@@ -14,9 +15,22 @@ function AdminLayout() {
 
   useEffect(() => {
     if (!auth) return;
-    const unsubscribe = auth.onAuthStateChanged((user) => {
+    const unsubscribe = auth.onAuthStateChanged(async (user) => {
       if (user) {
-        setIsAuthenticated(true);
+        // Check if user is a customer
+        try {
+          const userDoc = await getDoc(doc(db!, 'customers', user.uid));
+          if (userDoc.exists()) {
+            // Customer trying to access admin - block them
+            setIsAuthenticated(false);
+          } else {
+            // Admin or legacy user
+            setIsAuthenticated(true);
+          }
+        } catch (e) {
+          console.error("Error fetching user role", e);
+          setIsAuthenticated(true); // Fallback for legacy
+        }
       } else {
         setIsAuthenticated(false);
       }
@@ -29,11 +43,20 @@ function AdminLayout() {
     return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
   }
 
-  // Allow access to login page even if not authenticated
-  if (!isAuthenticated && window.location.pathname !== '/login') {
-    // We handle redirecting in a useEffect to avoid rendering issues
-    window.location.href = '/login';
+  // Allow access to admin login page even if not authenticated
+  if (!isAuthenticated && window.location.pathname !== '/admin' && window.location.pathname !== '/admin/') {
+    window.location.href = '/admin';
     return null;
+  }
+
+  // If we are on the login page, don't render the admin layout (header/sidebar)
+  if (window.location.pathname === '/admin' || window.location.pathname === '/admin/') {
+    // If they are already authenticated, redirect them to the dashboard
+    if (isAuthenticated) {
+      window.location.href = '/admin/dashboard';
+      return null;
+    }
+    return <Outlet />;
   }
 
   return (
@@ -56,11 +79,11 @@ function AdminLayout() {
                 <span className="hidden sm:inline">Home</span>
               </Link>
               <Link
-                to="/admin/services"
+                to="/admin/requests"
                 className="text-sm font-medium px-4 py-2 rounded-full text-muted-foreground hover:bg-muted/50 hover:text-foreground transition-all duration-200 [&.active]:bg-primary/10 [&.active]:text-primary [&.active]:font-semibold flex items-center gap-2"
               >
-                <LayoutDashboard className="w-4 h-4" />
-                <span className="hidden sm:inline">Services</span>
+                <ClipboardList className="w-4 h-4" />
+                <span className="hidden sm:inline">Quotes</span>
               </Link>
               <Link
                 to="/admin/dashboard"
@@ -70,11 +93,25 @@ function AdminLayout() {
                 <span className="hidden sm:inline">Menu</span>
               </Link>
               <Link
+                to="/admin/services"
+                className="text-sm font-medium px-4 py-2 rounded-full text-muted-foreground hover:bg-muted/50 hover:text-foreground transition-all duration-200 [&.active]:bg-primary/10 [&.active]:text-primary [&.active]:font-semibold flex items-center gap-2"
+              >
+                <LayoutDashboard className="w-4 h-4" />
+                <span className="hidden sm:inline">Services</span>
+              </Link>
+              <Link
                 to="/admin/gallery"
                 className="text-sm font-medium px-4 py-2 rounded-full text-muted-foreground hover:bg-muted/50 hover:text-foreground transition-all duration-200 [&.active]:bg-primary/10 [&.active]:text-primary [&.active]:font-semibold flex items-center gap-2"
               >
                 <Image className="w-4 h-4" />
                 <span className="hidden sm:inline">Gallery</span>
+              </Link>
+              <Link
+                to="/admin/settings"
+                className="text-sm font-medium px-4 py-2 rounded-full text-muted-foreground hover:bg-muted/50 hover:text-foreground transition-all duration-200 [&.active]:bg-primary/10 [&.active]:text-primary [&.active]:font-semibold flex items-center gap-2"
+              >
+                <Settings className="w-4 h-4" />
+                <span className="hidden sm:inline">Settings</span>
               </Link>
             </nav>
           </div>
@@ -89,7 +126,9 @@ function AdminLayout() {
           </Button>
         </div>
       </header>
-      <Outlet />
+      <main className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
+        <Outlet />
+      </main>
     </div>
   );
 }

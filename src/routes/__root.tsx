@@ -12,6 +12,7 @@ import { Navbar } from "@/components/site/Navbar";
 import { Footer } from "@/components/site/Footer";
 import { WhatsAppButton } from "@/components/site/WhatsAppButton";
 import { business } from "@/data/business";
+import { Toaster } from "sonner";
 
 function NotFoundComponent() {
   return (
@@ -82,7 +83,7 @@ function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const routerState = useRouterState();
   
-  const isAdminRoute = routerState.location.pathname.startsWith('/admin') || routerState.location.pathname === '/login';
+  const hideLayoutElements = routerState.location.pathname.startsWith('/admin') || routerState.location.pathname.startsWith('/customer') || routerState.location.pathname === '/login';
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -92,14 +93,14 @@ function RootComponent() {
       >
         Skip to content
       </a>
-      {!isAdminRoute && <Navbar />}
+      {!hideLayoutElements && <Navbar />}
       <main id="main">
         <Outlet />
       </main>
-      {!isAdminRoute && <Footer />}
-      {!isAdminRoute && <WhatsAppButton />}
+      {!hideLayoutElements && <Footer />}
+      {!hideLayoutElements && <WhatsAppButton />}
       
-      {!isAdminRoute && (
+      {!hideLayoutElements && (
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
@@ -129,6 +130,7 @@ function RootComponent() {
           }}
         />
       )}
+      <Toaster position="bottom-right" />
     </QueryClientProvider>
   );
 }

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { business } from "@/data/business";
 import { CTALink } from "./CTAButton";
+import { useSiteSettings } from "@/hooks/useSiteSettings";
 
 const links = [
   { to: "/", label: "Home" },
@@ -19,6 +20,11 @@ export function Navbar() {
   const [open, setOpen] = useState(false);
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const overlay = pathname === "/";
+  const { settings } = useSiteSettings();
+
+  const visibleLinks = links.filter(link => 
+    link.to !== "/gallery" || settings.isGalleryEnabled
+  );
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 24);
@@ -79,7 +85,7 @@ export function Navbar() {
         </Link>
 
         <ul className="hidden items-center gap-9 lg:flex">
-          {links.map((link) => {
+          {visibleLinks.map((link) => {
             const active = link.to === "/" ? pathname === "/" : pathname.startsWith(link.to);
             return (
               <li key={link.to}>
@@ -109,13 +115,14 @@ export function Navbar() {
 
         <div className="flex items-center gap-3">
           <CTALink
-            to="/contact"
+            to="/login"
             variant={solid ? "primary" : "gold"}
             withArrow={false}
             className="hidden px-5 py-3 text-xs sm:inline-flex"
           >
-            Get a Catering Quote
+            Sign In
           </CTALink>
+
           <button
             type="button"
             onClick={() => setOpen((v) => !v)}
@@ -150,7 +157,7 @@ export function Navbar() {
           >
             <p className="eyebrow text-accent">Explore Brinda</p>
             <ul className="mt-6 space-y-1">
-              {links.map((link) => {
+              {visibleLinks.map((link) => {
                 const active = link.to === "/" ? pathname === "/" : pathname.startsWith(link.to);
 
                 return (
@@ -169,9 +176,10 @@ export function Navbar() {
                 );
               })}
             </ul>
-            <CTALink to="/contact" variant="gold" className="mt-8 w-full">
-              Get a Catering Quote
+            <CTALink to="/login" variant="gold" className="mt-8 w-full">
+              Sign In
             </CTALink>
+
             {(business.instagram || business.facebook) && (
               <div className="mt-auto flex gap-6 pt-10 text-xs uppercase tracking-[0.16em] text-primary-foreground/50">
                 {business.instagram ? (

@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as AdminRouteRouteImport } from './routes/admin/route'
 import { Route as ContactRouteImport } from './routes/contact'
+import { Route as CustomerRouteRouteImport } from './routes/customer/route'
 import { Route as GalleryRouteImport } from './routes/gallery'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as MenuRouteImport } from './routes/menu'
@@ -22,7 +23,11 @@ import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as AdminDashboardRouteImport } from './routes/admin/dashboard'
 import { Route as AdminGalleryRouteImport } from './routes/admin/gallery'
 import { Route as AdminHomeRouteImport } from './routes/admin/home'
+import { Route as AdminRequestsRouteImport } from './routes/admin/requests'
 import { Route as AdminServicesRouteImport } from './routes/admin/services'
+import { Route as AdminSettingsRouteImport } from './routes/admin/settings'
+import { Route as CustomerBuildMenuRouteImport } from './routes/customer/build-menu'
+import { Route as CustomerDashboardRouteImport } from './routes/customer/dashboard'
 import { Route as ApiPublicEnquiryRouteImport } from './routes/api/public/enquiry'
 
 const IndexRoute = IndexRouteImport.update({
@@ -43,6 +48,11 @@ const AdminRouteRoute = AdminRouteRouteImport.update({
 const ContactRoute = ContactRouteImport.update({
   id: '/contact',
   path: '/contact',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CustomerRouteRoute = CustomerRouteRouteImport.update({
+  id: '/customer',
+  path: '/customer',
   getParentRoute: () => rootRouteImport,
 } as any)
 const GalleryRoute = GalleryRouteImport.update({
@@ -90,10 +100,30 @@ const AdminHomeRoute = AdminHomeRouteImport.update({
   path: '/home',
   getParentRoute: () => AdminRouteRoute,
 } as any)
+const AdminRequestsRoute = AdminRequestsRouteImport.update({
+  id: '/requests',
+  path: '/requests',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
 const AdminServicesRoute = AdminServicesRouteImport.update({
   id: '/services',
   path: '/services',
   getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminSettingsRoute = AdminSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const CustomerBuildMenuRoute = CustomerBuildMenuRouteImport.update({
+  id: '/build-menu',
+  path: '/build-menu',
+  getParentRoute: () => CustomerRouteRoute,
+} as any)
+const CustomerDashboardRoute = CustomerDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => CustomerRouteRoute,
 } as any)
 const ApiPublicEnquiryRoute = ApiPublicEnquiryRouteImport.update({
   id: '/api/public/enquiry',
@@ -104,6 +134,7 @@ const ApiPublicEnquiryRoute = ApiPublicEnquiryRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteRouteWithChildren
+  '/customer': typeof CustomerRouteRouteWithChildren
   '/about': typeof AboutRoute
   '/contact': typeof ContactRoute
   '/gallery': typeof GalleryRoute
@@ -114,12 +145,17 @@ export interface FileRoutesByFullPath {
   '/admin/dashboard': typeof AdminDashboardRoute
   '/admin/gallery': typeof AdminGalleryRoute
   '/admin/home': typeof AdminHomeRoute
+  '/admin/requests': typeof AdminRequestsRoute
   '/admin/services': typeof AdminServicesRoute
+  '/admin/settings': typeof AdminSettingsRoute
+  '/customer/build-menu': typeof CustomerBuildMenuRoute
+  '/customer/dashboard': typeof CustomerDashboardRoute
   '/admin/': typeof AdminIndexRoute
   '/api/public/enquiry': typeof ApiPublicEnquiryRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/customer': typeof CustomerRouteRouteWithChildren
   '/about': typeof AboutRoute
   '/contact': typeof ContactRoute
   '/gallery': typeof GalleryRoute
@@ -130,7 +166,11 @@ export interface FileRoutesByTo {
   '/admin/dashboard': typeof AdminDashboardRoute
   '/admin/gallery': typeof AdminGalleryRoute
   '/admin/home': typeof AdminHomeRoute
+  '/admin/requests': typeof AdminRequestsRoute
   '/admin/services': typeof AdminServicesRoute
+  '/admin/settings': typeof AdminSettingsRoute
+  '/customer/build-menu': typeof CustomerBuildMenuRoute
+  '/customer/dashboard': typeof CustomerDashboardRoute
   '/admin': typeof AdminIndexRoute
   '/api/public/enquiry': typeof ApiPublicEnquiryRoute
 }
@@ -138,6 +178,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteRouteWithChildren
+  '/customer': typeof CustomerRouteRouteWithChildren
   '/about': typeof AboutRoute
   '/contact': typeof ContactRoute
   '/gallery': typeof GalleryRoute
@@ -148,7 +189,11 @@ export interface FileRoutesById {
   '/admin/dashboard': typeof AdminDashboardRoute
   '/admin/gallery': typeof AdminGalleryRoute
   '/admin/home': typeof AdminHomeRoute
+  '/admin/requests': typeof AdminRequestsRoute
   '/admin/services': typeof AdminServicesRoute
+  '/admin/settings': typeof AdminSettingsRoute
+  '/customer/build-menu': typeof CustomerBuildMenuRoute
+  '/customer/dashboard': typeof CustomerDashboardRoute
   '/admin/': typeof AdminIndexRoute
   '/api/public/enquiry': typeof ApiPublicEnquiryRoute
 }
@@ -157,6 +202,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/admin'
+    | '/customer'
     | '/about'
     | '/contact'
     | '/gallery'
@@ -167,12 +213,17 @@ export interface FileRouteTypes {
     | '/admin/dashboard'
     | '/admin/gallery'
     | '/admin/home'
+    | '/admin/requests'
     | '/admin/services'
+    | '/admin/settings'
+    | '/customer/build-menu'
+    | '/customer/dashboard'
     | '/admin/'
     | '/api/public/enquiry'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/customer'
     | '/about'
     | '/contact'
     | '/gallery'
@@ -183,13 +234,18 @@ export interface FileRouteTypes {
     | '/admin/dashboard'
     | '/admin/gallery'
     | '/admin/home'
+    | '/admin/requests'
     | '/admin/services'
+    | '/admin/settings'
+    | '/customer/build-menu'
+    | '/customer/dashboard'
     | '/admin'
     | '/api/public/enquiry'
   id:
     | '__root__'
     | '/'
     | '/admin'
+    | '/customer'
     | '/about'
     | '/contact'
     | '/gallery'
@@ -200,7 +256,11 @@ export interface FileRouteTypes {
     | '/admin/dashboard'
     | '/admin/gallery'
     | '/admin/home'
+    | '/admin/requests'
     | '/admin/services'
+    | '/admin/settings'
+    | '/customer/build-menu'
+    | '/customer/dashboard'
     | '/admin/'
     | '/api/public/enquiry'
   fileRoutesById: FileRoutesById
@@ -208,6 +268,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRouteRoute: typeof AdminRouteRouteWithChildren
+  CustomerRouteRoute: typeof CustomerRouteRouteWithChildren
   AboutRoute: typeof AboutRoute
   ContactRoute: typeof ContactRoute
   GalleryRoute: typeof GalleryRoute
@@ -246,6 +307,13 @@ declare module '@tanstack/react-router' {
       path: '/contact'
       fullPath: '/contact'
       preLoaderRoute: typeof ContactRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/customer': {
+      id: '/customer'
+      path: '/customer'
+      fullPath: '/customer'
+      preLoaderRoute: typeof CustomerRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/gallery': {
@@ -311,12 +379,40 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminHomeRouteImport
       parentRoute: typeof AdminRouteRoute
     }
+    '/admin/requests': {
+      id: '/admin/requests'
+      path: '/requests'
+      fullPath: '/admin/requests'
+      preLoaderRoute: typeof AdminRequestsRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
     '/admin/services': {
       id: '/admin/services'
       path: '/services'
       fullPath: '/admin/services'
       preLoaderRoute: typeof AdminServicesRouteImport
       parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/settings': {
+      id: '/admin/settings'
+      path: '/settings'
+      fullPath: '/admin/settings'
+      preLoaderRoute: typeof AdminSettingsRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/customer/build-menu': {
+      id: '/customer/build-menu'
+      path: '/build-menu'
+      fullPath: '/customer/build-menu'
+      preLoaderRoute: typeof CustomerBuildMenuRouteImport
+      parentRoute: typeof CustomerRouteRoute
+    }
+    '/customer/dashboard': {
+      id: '/customer/dashboard'
+      path: '/dashboard'
+      fullPath: '/customer/dashboard'
+      preLoaderRoute: typeof CustomerDashboardRouteImport
+      parentRoute: typeof CustomerRouteRoute
     }
     '/api/public/enquiry': {
       id: '/api/public/enquiry'
@@ -332,7 +428,9 @@ interface AdminRouteRouteChildren {
   AdminDashboardRoute: typeof AdminDashboardRoute
   AdminGalleryRoute: typeof AdminGalleryRoute
   AdminHomeRoute: typeof AdminHomeRoute
+  AdminRequestsRoute: typeof AdminRequestsRoute
   AdminServicesRoute: typeof AdminServicesRoute
+  AdminSettingsRoute: typeof AdminSettingsRoute
   AdminIndexRoute: typeof AdminIndexRoute
 }
 
@@ -340,7 +438,9 @@ const AdminRouteRouteChildren: AdminRouteRouteChildren = {
   AdminDashboardRoute: AdminDashboardRoute,
   AdminGalleryRoute: AdminGalleryRoute,
   AdminHomeRoute: AdminHomeRoute,
+  AdminRequestsRoute: AdminRequestsRoute,
   AdminServicesRoute: AdminServicesRoute,
+  AdminSettingsRoute: AdminSettingsRoute,
   AdminIndexRoute: AdminIndexRoute,
 }
 
@@ -348,9 +448,24 @@ const AdminRouteRouteWithChildren = AdminRouteRoute._addFileChildren(
   AdminRouteRouteChildren,
 )
 
+interface CustomerRouteRouteChildren {
+  CustomerBuildMenuRoute: typeof CustomerBuildMenuRoute
+  CustomerDashboardRoute: typeof CustomerDashboardRoute
+}
+
+const CustomerRouteRouteChildren: CustomerRouteRouteChildren = {
+  CustomerBuildMenuRoute: CustomerBuildMenuRoute,
+  CustomerDashboardRoute: CustomerDashboardRoute,
+}
+
+const CustomerRouteRouteWithChildren = CustomerRouteRoute._addFileChildren(
+  CustomerRouteRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRouteRoute: AdminRouteRouteWithChildren,
+  CustomerRouteRoute: CustomerRouteRouteWithChildren,
   AboutRoute: AboutRoute,
   ContactRoute: ContactRoute,
   GalleryRoute: GalleryRoute,
