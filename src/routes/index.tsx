@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import { cn } from "@/lib/utils";
 import { db } from "@/lib/firebase";
 import { collection, getDocs, query, orderBy, doc, onSnapshot } from "firebase/firestore";
 import { HeroVideo } from "@/components/site/HeroVideo";
@@ -18,7 +19,7 @@ import {
   celebrationMoments 
 } from "@/data/business";
 import feastImage from "@/assets/hero-south-indian.jpg";
-
+import { ChevronLeft, ChevronRight, Volume2, VolumeX } from "lucide-react";
 export const Route = createFileRoute("/")({
   component: Home,
   head: () => ({
@@ -52,6 +53,59 @@ export const Route = createFileRoute("/")({
 function Home() {
   const [highlights, setHighlights] = useState(initialHighlights);
   const [ourStoryImage, setOurStoryImage] = useState<string | null>(null);
+  const [activeVideoIndex, setActiveVideoIndex] = useState(0);
+  
+  const storyVideos = ["/assets/brindha.mp4", "/assets/brindha2.mp4"];
+  
+  const nextVideo = () => setActiveVideoIndex((prev) => (prev + 1) % storyVideos.length);
+  const prevVideo = () => setActiveVideoIndex((prev) => (prev - 1 + storyVideos.length) % storyVideos.length);
+  const [isMuted, setIsMuted] = useState(true);
+  const videoContainerRef = useRef<HTMLDivElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const fadeIntervalRef = useRef<number | NodeJS.Timeout | null>(null);
+
+  const toggleMute = () => {
+    if (fadeIntervalRef.current) clearInterval(fadeIntervalRef.current as any);
+    if (videoRef.current) videoRef.current.volume = 1;
+    setIsMuted(!isMuted);
+  };
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const [entry] = entries;
+        if (!entry.isIntersecting && !isMuted && videoRef.current) {
+          const video = videoRef.current;
+          const fadeDuration = 800;
+          const fadeSteps = 20;
+          const stepTime = fadeDuration / fadeSteps;
+          const volumeStep = video.volume / fadeSteps;
+
+          if (fadeIntervalRef.current) clearInterval(fadeIntervalRef.current as any);
+          
+          fadeIntervalRef.current = setInterval(() => {
+            if (video.volume > volumeStep) {
+              video.volume -= volumeStep;
+            } else {
+              video.volume = 0;
+              setIsMuted(true);
+              if (fadeIntervalRef.current) clearInterval(fadeIntervalRef.current as any);
+              setTimeout(() => {
+                if (videoRef.current) videoRef.current.volume = 1;
+              }, 100);
+            }
+          }, stepTime);
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    if (videoContainerRef.current) {
+      observer.observe(videoContainerRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, [isMuted]);
 
   useEffect(() => {
     if (!db) return;
@@ -86,39 +140,84 @@ function Home() {
       {/* 01 — Hero */}
       <HeroVideo />
 
-      {/* 02 — Brand Introduction */}
-      <section className="bg-background">
-        <div className="mx-auto max-w-[1600px] px-5 py-24 sm:px-8 lg:px-12 lg:py-32">
-          <div className="grid items-center gap-16 lg:grid-cols-2 lg:gap-24">
-            <Reveal>
-              <div className="overflow-hidden rounded-2xl shadow-lg">
-                {ourStoryImage ? (
-                  <img
-                    src={ourStoryImage}
-                    alt="Our Story"
-                    className="aspect-[4/3] w-full object-cover transition-transform duration-[1200ms] hover:scale-105"
-                  />
-                ) : (
-                  <div className="flex aspect-[4/3] w-full flex-col items-center justify-center bg-muted/50 transition-transform duration-[1200ms] hover:scale-105 border-2 border-dashed border-border/50">
-                    <span className="font-display text-2xl text-muted-foreground">Master Photo / Logo Placeholder</span>
-                    <span className="mt-2 text-sm uppercase tracking-widest text-muted-foreground">Upload Image Here</span>
-                  </div>
-                )}
-              </div>
-            </Reveal>
-            <Reveal delay={100} className="flex flex-col justify-center">
-              <p className="eyebrow text-primary">Our Story</p>
-              <h2 className="mt-4 font-display text-4xl md:text-5xl lg:text-7xl leading-[1.1] text-foreground">
-                Tradition in every detail.
-              </h2>
-              <p className="mt-6 text-base leading-relaxed text-muted-foreground sm:text-lg">
-                {aboutPageData.ourStory.intro}
-              </p>
-              <div className="mt-10">
-                <CTALink to="/about">Discover Our Story</CTALink>
-              </div>
-            </Reveal>
+      {/* 02 — Brand Introduction (Responsive Video & Text) */}
+      <section ref={videoContainerRef} className="flex flex-col md:block md:relative w-full bg-ink md:h-[80vh] md:min-h-[500px] md:max-h-[900px] group">
+        
+        {/* Video Container (Top on mobile, Absolute Background on desktop) */}
+        <div className="relative w-full aspect-video md:h-full md:absolute md:inset-0 overflow-hidden @container">
+          <video 
+            ref={videoRef}
+            key={storyVideos[activeVideoIndex]}
+            src={storyVideos[activeVideoIndex]} 
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[100cqh] h-[100cqw] object-cover -rotate-90 transition-transform duration-[1200ms]"
+            autoPlay 
+            muted={isMuted}
+            loop 
+            playsInline 
+          />
+          
+          {/* Subtle Overlay for text readability - only needed when text is visible on desktop */}
+          <div className={cn(
+            "absolute inset-0 bg-black/20 transition-opacity duration-700 hidden md:block",
+            !isMuted && "opacity-0 pointer-events-none"
+          )} />
+
+          {/* Navigation Buttons (Simple Arrows) */}
+          <div className="absolute inset-0 flex items-center justify-between px-2 sm:px-6 opacity-0 transition-opacity duration-300 group-hover:opacity-100 z-20 pointer-events-none">
+            <button 
+              onClick={prevVideo}
+              className="p-2 text-white/70 hover:text-white transition-colors pointer-events-auto"
+              aria-label="Previous video"
+            >
+              <ChevronLeft className="h-10 w-10 drop-shadow-md" />
+            </button>
+            <button 
+              onClick={nextVideo}
+              className="p-2 text-white/70 hover:text-white transition-colors pointer-events-auto"
+              aria-label="Next video"
+            >
+              <ChevronRight className="h-10 w-10 drop-shadow-md" />
+            </button>
           </div>
+
+          {/* Mute Button */}
+          <button 
+            onClick={toggleMute}
+            className="absolute top-6 right-6 z-30 p-2 text-white/80 hover:text-white transition-colors bg-black/20 backdrop-blur-sm rounded-full pointer-events-auto"
+            aria-label={isMuted ? "Unmute video" : "Mute video"}
+          >
+            {isMuted ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
+          </button>
+          
+          {/* Dots indicator */}
+          <div className="absolute bottom-6 left-0 right-0 flex justify-center gap-3 z-20 pointer-events-none">
+            {storyVideos.map((_, idx) => (
+              <div 
+                key={idx} 
+                className={`h-1.5 rounded-full transition-all duration-500 ${activeVideoIndex === idx ? 'w-8 bg-white' : 'w-2 bg-white/40'}`}
+              />
+            ))}
+          </div>
+        </div>
+
+        {/* Content Container (Below on mobile, Overlay on desktop) */}
+        <div className={cn(
+          "relative z-10 mx-auto max-w-[1200px] px-5 py-16 sm:px-8 lg:px-12 text-center flex flex-col items-center justify-center",
+          "md:absolute md:inset-0 md:py-0 transition-opacity duration-700",
+          !isMuted && "md:opacity-0 md:pointer-events-none"
+        )}>
+          <Reveal delay={100} className="flex flex-col items-center justify-center">
+            <p className="eyebrow text-white/80 tracking-[0.2em]">Our Story</p>
+            <h2 className="mt-6 font-display text-4xl sm:text-5xl md:text-6xl lg:text-8xl leading-[1.1] text-white drop-shadow-lg">
+              Tradition in every detail.
+            </h2>
+            <p className="mt-6 sm:mt-8 max-w-2xl text-sm sm:text-base md:text-lg leading-relaxed text-white/90 drop-shadow-md">
+              {aboutPageData.ourStory.intro}
+            </p>
+            <div className="mt-10 sm:mt-12">
+              <CTALink to="/about">Discover Our Story</CTALink>
+            </div>
+          </Reveal>
         </div>
       </section>
 
