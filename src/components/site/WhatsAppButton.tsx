@@ -6,11 +6,18 @@ import { whatsAppLink } from "@/lib/whatsapp";
 /** Floating WhatsApp entry point. Renders nothing until a number is configured. */
 export function WhatsAppButton() {
   const [mounted, setMounted] = useState(false);
+  const [isHidden, setIsHidden] = useState(false);
   const href = whatsAppLink();
 
   useEffect(() => {
     const timer = window.setTimeout(() => setMounted(true), 700);
-    return () => window.clearTimeout(timer);
+    const handleHide = (e: CustomEvent) => setIsHidden(e.detail);
+    window.addEventListener('hide-whatsapp' as any, handleHide);
+    
+    return () => {
+      window.clearTimeout(timer);
+      window.removeEventListener('hide-whatsapp' as any, handleHide);
+    };
   }, []);
 
   if (!href) return null;
@@ -23,7 +30,8 @@ export function WhatsAppButton() {
       aria-label="Chat with us on WhatsApp"
       className={cn(
         "group fixed right-4 bottom-4 z-50 inline-flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-[0_12px_36px_-12px_color-mix(in_oklab,var(--primary)_70%,transparent)] transition-all duration-500 sm:right-6 sm:bottom-6",
-        mounted ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0",
+        !mounted ? "translate-y-4 opacity-0 pointer-events-none" : 
+        isHidden ? "translate-y-0 opacity-100 md:opacity-0 md:pointer-events-none md:translate-y-4" : "translate-y-0 opacity-100"
       )}
     >
       <svg

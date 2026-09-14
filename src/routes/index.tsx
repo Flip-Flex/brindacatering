@@ -108,6 +108,13 @@ function Home() {
   }, [isMuted]);
 
   useEffect(() => {
+    window.dispatchEvent(new CustomEvent('hide-whatsapp', { detail: !isMuted }));
+    return () => {
+      window.dispatchEvent(new CustomEvent('hide-whatsapp', { detail: false }));
+    };
+  }, [isMuted]);
+
+  useEffect(() => {
     if (!db) return;
     const fetchHighlights = async () => {
       try {
