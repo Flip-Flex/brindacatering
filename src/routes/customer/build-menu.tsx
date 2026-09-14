@@ -301,7 +301,7 @@ function BuildMenuPage() {
       </div>
 
       {/* Sticky Bottom Bar */}
-      <div className="fixed bottom-0 left-0 md:left-64 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200 shadow-[0_-10px_40px_rgba(0,0,0,0.05)] p-4 animate-in slide-in-from-bottom-full duration-300">
+      <div className="fixed bottom-16 lg:bottom-0 left-0 lg:left-64 right-0 z-30 bg-white/95 backdrop-blur-md border-t border-slate-200 shadow-[0_-10px_40px_rgba(0,0,0,0.05)] p-4 animate-in slide-in-from-bottom-full duration-300">
         <div className="max-w-5xl mx-auto flex items-center justify-between">
           <div>
             <p className="font-medium">{selectedItemIds.size + customFoodsList.length} items selected</p>
