@@ -80,7 +80,7 @@ export function Navbar() {
           <span
             className={cn("eyebrow block text-xs", solid ? "text-primary" : "text-accent")}
           >
-            Catering Services
+            Caterers
           </span>
         </Link>
 

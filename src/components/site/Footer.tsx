@@ -31,7 +31,7 @@ export function Footer() {
           
           <div className="lg:col-span-4">
             <p className="font-display text-4xl leading-tight">Brinda</p>
-            <p className="eyebrow mt-3 text-accent tracking-[0.2em]">Catering Services</p>
+            <p className="eyebrow mt-3 text-accent tracking-[0.2em]">Caterers</p>
             <p className="mt-8 max-w-sm text-sm leading-relaxed text-primary-foreground/50">
               Professional catering for weddings, celebrations, corporate events and special
               occasions.
