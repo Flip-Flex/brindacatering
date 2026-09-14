@@ -155,14 +155,17 @@ export const generateQuotePDF = (data: PDFQuoteData) => {
   for (let i = 1; i <= pageCount; i++) {
     doc.setPage(i);
     doc.setFillColor(primary[0], primary[1], primary[2]);
-    doc.rect(0, pageHeight - 15, pageWidth, 15, 'F');
+    doc.rect(0, pageHeight - 22, pageWidth, 22, 'F');
     doc.setTextColor(255, 255, 255);
-    doc.setFontSize(9);
+    doc.setFontSize(8);
     doc.setFont("helvetica", "normal");
     
-    // Use first line of address and phone from business config
-    const footerText = `${business.name} | ${business.addressLines[0]} | Phone: ${business.phone}`;
-    doc.text(footerText, pageWidth / 2, pageHeight - 6, { align: "center" });
+    // Line 1: Full address
+    const fullAddress = business.addressLines.join(', ');
+    doc.text(`${business.name} | ${fullAddress}`, pageWidth / 2, pageHeight - 14, { align: "center" });
+    
+    // Line 2: Phone + WhatsApp
+    doc.text(`Phone: ${business.phone} | WhatsApp: ${business.whatsapp}`, pageWidth / 2, pageHeight - 7, { align: "center" });
     
     // Page number
     doc.text(`Page ${i} of ${pageCount}`, pageWidth - 10, pageHeight - 6, { align: "right" });

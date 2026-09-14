@@ -76,7 +76,7 @@ export function Footer() {
                     rel="noopener noreferrer"
                     className="hover:text-accent transition-colors"
                   >
-                    {business.phone}
+                    {business.whatsapp}
                   </a>
                 ) : (
                   <span className="text-primary-foreground/50">WhatsApp number to be added</span>
