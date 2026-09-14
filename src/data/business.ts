@@ -41,8 +41,8 @@ export type BusinessInfo = {
 export const business: BusinessInfo = {
   name: "Brinda Caterers",
   tagline: "Authentic flavours. Timeless traditions.",
-  phone: env["VITE_BUSINESS_PHONE"] ?? "+91 7395 966 568",
-  whatsapp: env["VITE_WHATSAPP_NUMBER"] ?? "+91 7395 966 568",
+  phone: env["VITE_BUSINESS_PHONE"] ?? "+91 99424 98402",
+  whatsapp: env["VITE_WHATSAPP_NUMBER"] ?? "+91 90877 77047",
   email: env["VITE_BUSINESS_EMAIL"] ?? "brindacaterers@gmail.com",
   addressLines: (env["VITE_BUSINESS_ADDRESS"] ?? "No 9/82 Arani x road, Arani road | Near Muncipality water tank | Cheyyar - 604407")
     .split("|")
