@@ -1,13 +1,13 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { useState, useEffect } from 'react';
 import { db } from '@/lib/firebase';
-import { collection, query, orderBy, getDocs, updateDoc, doc } from 'firebase/firestore';
+import { collection, query, orderBy, getDocs, updateDoc, doc, deleteDoc } from 'firebase/firestore';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
-import { Calendar, Users, Mail, Clock, Search, Filter, ArrowUpDown, FileDown } from 'lucide-react';
+import { Calendar, Users, Mail, Clock, Search, Filter, ArrowUpDown, FileDown, RefreshCw, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { generateQuotePDF } from '@/lib/pdf';
 
@@ -23,17 +23,21 @@ function AdminRequestsPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [sortBy, setSortBy] = useState('newest');
+  const [refreshing, setRefreshing] = useState(false);
 
-  const fetchRequests = async () => {
+  const fetchRequests = async (isRefresh = false) => {
+    if (isRefresh) setRefreshing(true);
     try {
       const q = query(collection(db!, 'menuRequests'), orderBy('createdAt', 'desc'));
       const snapshot = await getDocs(q);
       setRequests(snapshot.docs.map(d => ({ id: d.id, ...d.data() })));
+      if (isRefresh) toast.success(`Loaded ${snapshot.docs.length} quotes.`);
     } catch (err) {
       console.error("Error fetching requests:", err);
       toast.error("Failed to load requests.");
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
   };
 
@@ -45,10 +49,21 @@ function AdminRequestsPage() {
     try {
       await updateDoc(doc(db!, 'menuRequests', requestId), { status: newStatus });
       toast.success("Status updated!");
-      // Optimistic update
       setRequests(prev => prev.map(r => r.id === requestId ? { ...r, status: newStatus } : r));
     } catch (e) {
       toast.error("Failed to update status.");
+    }
+  };
+
+  const deleteRequest = async (requestId: string, customerName: string) => {
+    if (!window.confirm(`Are you sure you want to delete the quote from "${customerName}"? This cannot be undone.`)) return;
+    try {
+      await deleteDoc(doc(db!, 'menuRequests', requestId));
+      setRequests(prev => prev.filter(r => r.id !== requestId));
+      toast.success("Quote deleted.");
+    } catch (e) {
+      console.error("Error deleting request:", e);
+      toast.error("Failed to delete quote.");
     }
   };
 
@@ -124,6 +139,16 @@ function AdminRequestsPage() {
           <h1 className="text-3xl font-display text-foreground">Menu Requests</h1>
           <p className="text-muted-foreground mt-1">Manage custom quotes submitted by customers.</p>
         </div>
+        <Button 
+          variant="outline" 
+          size="sm" 
+          onClick={() => fetchRequests(true)} 
+          disabled={refreshing}
+          className="gap-2"
+        >
+          <RefreshCw size={16} className={refreshing ? 'animate-spin' : ''} />
+          {refreshing ? 'Refreshing...' : 'Refresh'}
+        </Button>
       </div>
 
       <div className="bg-card border border-border/40 rounded-xl p-4 flex flex-col md:flex-row gap-4 items-center justify-between shadow-sm">
@@ -208,6 +233,14 @@ function AdminRequestsPage() {
                         <SelectItem value="completed">Completed</SelectItem>
                       </SelectContent>
                     </Select>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={() => deleteRequest(req.id, req.userName || 'Unknown')} 
+                      className="text-destructive hover:text-destructive hover:bg-destructive/10 h-9 w-9 p-0"
+                    >
+                      <Trash2 size={16} />
+                    </Button>
                   </div>
                 </div>
               </CardHeader>
