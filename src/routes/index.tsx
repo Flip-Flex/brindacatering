@@ -19,7 +19,7 @@ import {
   celebrationMoments 
 } from "@/data/business";
 import feastImage from "@/assets/hero-south-indian.jpg";
-import { ChevronLeft, ChevronRight, Volume2, VolumeX } from "lucide-react";
+import { ChevronLeft, ChevronRight, Volume2, VolumeX, Loader2 } from "lucide-react";
 export const Route = createFileRoute("/")({
   component: Home,
   head: () => ({
@@ -60,6 +60,7 @@ function Home() {
   const nextVideo = () => setActiveVideoIndex((prev) => (prev + 1) % storyVideos.length);
   const prevVideo = () => setActiveVideoIndex((prev) => (prev - 1 + storyVideos.length) % storyVideos.length);
   const [isMuted, setIsMuted] = useState(true);
+  const [isVideoLoading, setIsVideoLoading] = useState(true);
   const videoContainerRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const fadeIntervalRef = useRef<number | NodeJS.Timeout | null>(null);
@@ -161,8 +162,18 @@ function Home() {
             muted={isMuted}
             loop 
             playsInline 
+            onWaiting={() => setIsVideoLoading(true)}
+            onPlaying={() => setIsVideoLoading(false)}
+            onCanPlay={() => setIsVideoLoading(false)}
           />
           
+          {/* Loading Spinner */}
+          {isVideoLoading && (
+            <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/20 backdrop-blur-sm pointer-events-none transition-opacity duration-300">
+              <Loader2 className="h-10 w-10 animate-spin text-white/80" />
+            </div>
+          )}
+
           {/* Subtle Overlay for text readability - only needed when text is visible on desktop */}
           <div className={cn(
             "absolute inset-0 bg-black/20 transition-opacity duration-700 hidden md:block",

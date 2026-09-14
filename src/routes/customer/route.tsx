@@ -176,19 +176,6 @@ function AccountLayout() {
           {/* Desktop Header */}
           <header className="hidden lg:flex h-16 border-b border-slate-200 bg-white items-center px-8 shrink-0 justify-between sticky top-0 z-20">
             <h1 className="text-xl font-semibold text-slate-800">Customer Portal</h1>
-            <div className="flex items-center gap-4">
-              <div className="text-right hidden xl:block">
-                <p className="text-sm font-medium text-slate-700">{displayName}</p>
-                <p className="text-xs text-slate-400">{displayEmail}</p>
-              </div>
-              <button
-                onClick={handleLogout}
-                className="text-sm text-red-600 font-medium flex items-center gap-2 hover:bg-red-50 px-3 py-1.5 rounded-md transition-colors"
-              >
-                <LogOut size={16} />
-                Sign Out
-              </button>
-            </div>
           </header>
 
           {/* Page Content */}
