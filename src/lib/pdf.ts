@@ -1,5 +1,6 @@
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import { business } from '@/data/business';
 
 export interface PDFQuoteData {
   customerName: string;
@@ -110,6 +111,12 @@ export const generateQuotePDF = (data: PDFQuoteData) => {
 
   // --- Special Instructions Box ---
   if (customNotes.trim()) {
+    // Check if we need to add a new page for the notes
+    if (currentY + 50 > pageHeight - 20) {
+      doc.addPage();
+      currentY = 20;
+    }
+
     doc.setFontSize(11);
     doc.setFont("helvetica", "bold");
     doc.setTextColor(textDark[0], textDark[1], textDark[2]);
@@ -132,18 +139,34 @@ export const generateQuotePDF = (data: PDFQuoteData) => {
     currentY += Math.max(20, boxHeight) + 15;
   }
 
+  // Check if signoff needs a new page
+  if (currentY + 10 > pageHeight - 20) {
+    doc.addPage();
+    currentY = 20;
+  }
+
   // --- Sign off ---
   doc.setFont("helvetica", "italic");
   doc.setTextColor(textMuted[0], textMuted[1], textMuted[2]);
   doc.text("Thank you for choosing Brinda Caterers. We will get back to you with a quote soon.", pageWidth / 2, currentY, { align: "center" });
 
-  // --- Footer ---
-  doc.setFillColor(primary[0], primary[1], primary[2]);
-  doc.rect(0, pageHeight - 15, pageWidth, 15, 'F');
-  doc.setTextColor(255, 255, 255);
-  doc.setFontSize(9);
-  doc.setFont("helvetica", "normal");
-  doc.text("Brinda Caterers | 123 Food Street, Culinary City | +1 234 567 8900", pageWidth / 2, pageHeight - 6, { align: "center" });
+  // --- Footer on all pages ---
+  const pageCount = (doc as any).internal.getNumberOfPages();
+  for (let i = 1; i <= pageCount; i++) {
+    doc.setPage(i);
+    doc.setFillColor(primary[0], primary[1], primary[2]);
+    doc.rect(0, pageHeight - 15, pageWidth, 15, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "normal");
+    
+    // Use first line of address and phone from business config
+    const footerText = `${business.name} | ${business.addressLines[0]} | Phone: ${business.phone}`;
+    doc.text(footerText, pageWidth / 2, pageHeight - 6, { align: "center" });
+    
+    // Page number
+    doc.text(`Page ${i} of ${pageCount}`, pageWidth - 10, pageHeight - 6, { align: "right" });
+  }
 
   // Save PDF
   doc.save(`Brinda_Caterers_Quote_${eventDate.replace(/\//g, '-') || 'Download'}.pdf`);
