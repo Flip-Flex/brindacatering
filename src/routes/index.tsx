@@ -149,7 +149,7 @@ function Home() {
             ref={videoRef}
             key={storyVideos[activeVideoIndex]}
             src={storyVideos[activeVideoIndex]} 
-            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[100cqh] h-[100cqw] object-cover -rotate-90 transition-transform duration-[1200ms]"
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[100cqh] h-[100cqw] object-contain md:object-cover -rotate-90 transition-transform duration-[1200ms]"
             autoPlay 
             muted={isMuted}
             loop 
@@ -202,11 +202,11 @@ function Home() {
 
         {/* Content Container (Below on mobile, Overlay on desktop) */}
         <div className={cn(
-          "relative z-10 mx-auto max-w-[1200px] px-5 py-16 sm:px-8 lg:px-12 text-center flex flex-col items-center justify-center",
-          "md:absolute md:inset-0 md:py-0 transition-opacity duration-700",
+          "relative z-10 mx-auto max-w-[1200px] px-5 py-16 sm:px-8 lg:px-12 text-left md:text-center flex flex-col items-start md:items-center justify-center",
+          "md:absolute md:inset-0 md:py-0 transition-opacity duration-700 w-full",
           !isMuted && "md:opacity-0 md:pointer-events-none"
         )}>
-          <Reveal delay={100} className="flex flex-col items-center justify-center">
+          <Reveal delay={100} className="flex flex-col items-start md:items-center justify-center w-full">
             <p className="eyebrow text-white/80 tracking-[0.2em]">Our Story</p>
             <h2 className="mt-6 font-display text-4xl sm:text-5xl md:text-6xl lg:text-8xl leading-[1.1] text-white drop-shadow-lg">
               Tradition in every detail.
