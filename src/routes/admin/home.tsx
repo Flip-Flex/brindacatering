@@ -24,7 +24,6 @@ type Highlight = {
 
 function AdminHome() {
   const [highlights, setHighlights] = useState<Highlight[]>([]);
-  const [ourStoryImage, setOurStoryImage] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -35,10 +34,6 @@ function AdminHome() {
     id: '', title: '', description: '', image: '', order: 0
   });
 
-  const [isStoryDialogOpen, setIsStoryDialogOpen] = useState(false);
-  const [storyImageFile, setStoryImageFile] = useState<File | null>(null);
-  const [isSavingStory, setIsSavingStory] = useState(false);
-
   useEffect(() => {
     if (!db) return;
     const q = query(collection(db, 'cateringHighlights'), orderBy('order'));
@@ -48,15 +43,8 @@ function AdminHome() {
       setLoading(false);
     });
 
-    const unsubscribeStory = onSnapshot(doc(db, 'siteSettings', 'ourStoryImage'), (docSnap) => {
-      if (docSnap.exists()) {
-        setOurStoryImage(docSnap.data()['image']);
-      }
-    });
-
     return () => {
       unsubscribeHighlights();
-      unsubscribeStory();
     };
   }, []);
 
@@ -74,45 +62,6 @@ function AdminHome() {
     setFormData(highlight);
     setImageFile(null);
     setIsDialogOpen(true);
-  };
-
-  const handleSaveStoryImage = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!storyImageFile || !storage || !db) return;
-    setIsSavingStory(true);
-    try {
-      if (ourStoryImage && ourStoryImage.includes('firebasestorage')) {
-        const oldRef = ref(storage, ourStoryImage);
-        await deleteObject(oldRef).catch(e => console.log('Old story image cleanup failed', e));
-      }
-      const storageRef = ref(storage, `siteSettings/${Date.now()}_${storyImageFile.name}`);
-      const snapshot = await uploadBytes(storageRef, storyImageFile);
-      const imageUrl = await getDownloadURL(snapshot.ref);
-      await setDoc(doc(db, 'siteSettings', 'ourStoryImage'), { image: imageUrl });
-      setIsStoryDialogOpen(false);
-      setStoryImageFile(null);
-    } catch (error) {
-      console.error("Failed to save story image", error);
-      alert("Failed to save Our Story image");
-    } finally {
-      setIsSavingStory(false);
-    }
-  };
-
-  const handleDeleteStoryImage = async () => {
-    if (!db) return;
-    if (confirm("Are you sure you want to remove the Our Story image?")) {
-      try {
-        await deleteDoc(doc(db, 'siteSettings', 'ourStoryImage'));
-        if (ourStoryImage && ourStoryImage.includes('firebasestorage') && storage) {
-          const fileRef = ref(storage, ourStoryImage);
-          await deleteObject(fileRef).catch(e => console.error(e));
-        }
-        setOurStoryImage(null);
-      } catch (error) {
-        console.error("Failed to delete story image", error);
-      }
-    }
   };
 
   const handleSeed = async () => {
@@ -218,58 +167,6 @@ function AdminHome() {
   return (
     <div className="min-h-screen bg-background px-5 py-12 sm:px-8 lg:px-12">
       <div className="max-w-[1200px] mx-auto space-y-8">
-
-        {/* Our Story Image Section */}
-        <div className="bg-card border border-border rounded-lg shadow-sm p-6">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-            <div>
-              <h2 className="text-2xl font-serif text-primary">Our Story Image</h2>
-              <p className="text-sm text-muted-foreground">Manage the master photo shown in the "Our Story" section on the homepage.</p>
-            </div>
-            
-            <Dialog open={isStoryDialogOpen} onOpenChange={setIsStoryDialogOpen}>
-              <DialogTrigger asChild>
-                <Button variant="outline">
-                  <Edit className="w-4 h-4 mr-2" /> {ourStoryImage ? 'Change Image' : 'Add Image'}
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>{ourStoryImage ? 'Change Our Story Image' : 'Add Our Story Image'}</DialogTitle>
-                </DialogHeader>
-                <form onSubmit={handleSaveStoryImage} className="space-y-4 py-4">
-                  <div className="space-y-2">
-                    <Label>Select Image File</Label>
-                    <Input type="file" accept="image/*" onChange={e => setStoryImageFile(e.target.files?.[0] || null)} required />
-                  </div>
-                  <DialogFooter>
-                    <Button type="button" variant="outline" onClick={() => setIsStoryDialogOpen(false)}>Cancel</Button>
-                    <Button type="submit" disabled={isSavingStory || !storyImageFile}>
-                      {isSavingStory ? 'Uploading...' : 'Save Image'}
-                    </Button>
-                  </DialogFooter>
-                </form>
-              </DialogContent>
-            </Dialog>
-          </div>
-
-          <div className="flex items-center gap-6">
-            <div className="w-48 h-32 rounded-lg border-2 border-dashed border-border flex items-center justify-center bg-muted/50 overflow-hidden relative group">
-              {ourStoryImage ? (
-                <>
-                  <img src={ourStoryImage} alt="Our Story" className="w-full h-full object-cover" />
-                  <div className="absolute inset-0 bg-black/50 flex items-center justify-center transition-opacity">
-                    <Button variant="destructive" size="sm" onClick={handleDeleteStoryImage}>
-                      <Trash2 className="w-4 h-4 mr-2" /> Remove
-                    </Button>
-                  </div>
-                </>
-              ) : (
-                <span className="text-xs text-muted-foreground">No image set</span>
-              )}
-            </div>
-          </div>
-        </div>
         
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-card border border-border rounded-lg shadow-sm p-6 gap-4">
           <div>
