@@ -7,7 +7,7 @@ export interface SiteSettings {
 }
 
 const defaultSettings: SiteSettings = {
-  isGalleryEnabled: true, // Default to true if the document doesn't exist yet
+  isGalleryEnabled: false, // Default to false to prevent flashing before DB loads
 };
 
 export function useSiteSettings() {
