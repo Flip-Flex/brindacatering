@@ -21,13 +21,13 @@ export const Route = createFileRoute("/gallery")({
   component: GalleryPage,
   head: () => ({
     meta: [
-      { title: "Gallery — Brinda Caterings | Cheyyar" },
+      { title: "Gallery — Brinda Catering | Cheyyar" },
       {
         name: "description",
         content:
-          "South Indian food, wedding service, function catering and large-scale preparation from Brinda Caterings.",
+          "South Indian food, wedding service, function catering and large-scale preparation from Brinda Catering.",
       },
-      { property: "og:title", content: "Gallery — Brinda Caterings | Cheyyar" },
+      { property: "og:title", content: "Gallery — Brinda Catering | Cheyyar" },
       {
         property: "og:description",
         content: "Food, wedding catering, event setups and corporate catering photography.",

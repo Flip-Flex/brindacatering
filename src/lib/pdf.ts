@@ -53,14 +53,14 @@ export const generateQuotePDF = async (data: PDFQuoteData) => {
     doc.setTextColor(255, 255, 255);
     doc.setFont("helvetica", "bold");
     doc.setFontSize(20);
-    doc.text("Brinda Caterings", 46, 19);
+    doc.text("Brinda Catering", 46, 19);
   } catch (err) {
     console.error("Failed to load logo for PDF", err);
     // Fallback if logo fails
     doc.setTextColor(255, 255, 255);
     doc.setFont("helvetica", "bold");
     doc.setFontSize(24);
-    doc.text("Brinda Caterings", 20, 19);
+    doc.text("Brinda Catering", 20, 19);
   }
   
   // Quote Request Title
@@ -170,7 +170,7 @@ export const generateQuotePDF = async (data: PDFQuoteData) => {
   // --- Sign off ---
   doc.setFont("helvetica", "italic");
   doc.setTextColor(textMuted[0], textMuted[1], textMuted[2]);
-  doc.text("Thank you for choosing Brinda Caterings. We will get back to you with a quote soon.", pageWidth / 2, currentY, { align: "center" });
+  doc.text("Thank you for choosing Brinda Catering. We will get back to you with a quote soon.", pageWidth / 2, currentY, { align: "center" });
 
   // --- Footer on all pages ---
   const pageCount = (doc as any).internal.getNumberOfPages();

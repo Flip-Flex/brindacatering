@@ -25,7 +25,7 @@ export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       {
-        title: "Brinda Caterings | Authentic South Indian Catering in Cheyyar & Beyond",
+        title: "Brinda Catering | Authentic South Indian Catering in Cheyyar & Beyond",
       },
       {
         name: "description",
@@ -34,7 +34,7 @@ export const Route = createFileRoute("/")({
       },
       {
         property: "og:title",
-        content: "Brinda Caterings — Wedding & Event Catering",
+        content: "Brinda Catering — Wedding & Event Catering",
       },
       {
         property: "og:description",

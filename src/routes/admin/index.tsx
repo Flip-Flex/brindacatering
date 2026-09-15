@@ -35,7 +35,7 @@ function AdminLogin() {
     <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4 selection:bg-primary/20">
       <div className="w-full max-w-[380px] space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
         <div className="text-center space-y-2">
-          <h1 className="text-4xl font-display tracking-tight text-primary">Brinda Caterings</h1>
+          <h1 className="text-4xl font-display tracking-tight text-primary">Brinda Catering</h1>
           <p className="text-sm text-muted-foreground tracking-wide uppercase">Secure Admin Portal</p>
         </div>
         

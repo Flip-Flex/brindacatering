@@ -13,13 +13,13 @@ export const Route = createFileRoute("/menu")({
   component: MenuPage,
   head: () => ({
     meta: [
-      { title: "Catering Menu — Brinda Caterings | Cheyyar, TN" },
+      { title: "Catering Menu — Brinda Catering | Cheyyar, TN" },
       {
         name: "description",
         content:
           "Explore South Indian vegetarian, non-vegetarian, tiffin, sweets and celebration menu directions, customised to your occasion.",
       },
-      { property: "og:title", content: "Catering Menu — Brinda Caterings | Cheyyar, TN" },
+      { property: "og:title", content: "Catering Menu — Brinda Catering | Cheyyar, TN" },
       {
         property: "og:description",
         content:
@@ -76,7 +76,7 @@ function MenuPage() {
           __html: JSON.stringify({
             "@context": "https://schema.org",
             "@type": "Menu",
-            "name": "Brinda Caterings Catering Menu",
+            "name": "Brinda Catering Catering Menu",
             "description": "Authentic South Indian catering menus for events.",
             "url": "https://brindacaterers.com/menu",
             "mainEntityOfPage": "https://brindacaterers.com/menu"

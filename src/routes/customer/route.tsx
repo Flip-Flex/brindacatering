@@ -77,7 +77,7 @@ function AccountLayout() {
       {/* ─── MOBILE / TABLET TOP BAR ─── */}
       <header className="lg:hidden sticky top-0 z-40 h-14 bg-white border-b border-slate-200 flex items-center justify-between px-4">
         <div className="flex items-center gap-3">
-          <span className="font-bold text-base text-slate-900 tracking-tight ml-2">Brinda Caterings</span>
+          <span className="font-bold text-base text-slate-900 tracking-tight ml-2">Brinda Catering</span>
         </div>
         <button
           onClick={handleLogout}
@@ -111,7 +111,7 @@ function AccountLayout() {
         >
           {/* Brand - Desktop only (mobile has the top bar) */}
           <div className="h-14 lg:h-16 flex items-center px-6 border-b border-slate-200 shrink-0">
-            <span className="font-bold text-lg text-slate-900 tracking-tight">Brinda Caterings</span>
+            <span className="font-bold text-lg text-slate-900 tracking-tight">Brinda Catering</span>
           </div>
 
           {/* Navigation */}

@@ -29,15 +29,15 @@ export const Route = createFileRoute("/contact")({
   validateSearch: searchSchema,
   head: () => ({
     meta: [
-      { title: "Contact Brinda Caterings | Cheyyar Event Catering" },
+      { title: "Contact Brinda Catering | Cheyyar Event Catering" },
       {
         name: "description",
         content:
-          "Contact Brinda Caterings for a catering quote. Share your event type, date, guest count and location and we'll respond with the next steps.",
+          "Contact Brinda Catering for a catering quote. Share your event type, date, guest count and location and we'll respond with the next steps.",
       },
       {
         property: "og:title",
-        content: "Contact Brinda Caterings | Cheyyar Event Catering",
+        content: "Contact Brinda Catering | Cheyyar Event Catering",
       },
       {
         property: "og:description",
@@ -67,7 +67,7 @@ function Contact() {
           __html: JSON.stringify({
             "@context": "https://schema.org",
             "@type": "ContactPage",
-            "name": "Contact Brinda Caterings",
+            "name": "Contact Brinda Catering",
             "description": "Contact us for authentic South Indian catering quotes.",
             "url": "https://brindacaterers.com/contact",
             "mainEntity": {

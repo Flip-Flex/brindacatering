@@ -118,7 +118,7 @@ function CustomerLogin() {
         
         <div className="relative z-10 p-12 max-w-xl">
           <Link to="/" className="inline-block hover:opacity-90 transition-opacity mb-8 animate-in slide-in-from-bottom-8 duration-700">
-            <img src="/assets/brindalogo.png" alt="Brinda Caterings" className="h-24 md:h-32 w-auto drop-shadow-2xl" />
+            <img src="/assets/brindalogo.png" alt="Brinda Catering" className="h-24 md:h-32 w-auto drop-shadow-2xl" />
           </Link>
           <h2 className="font-display text-4xl lg:text-5xl text-primary-foreground leading-tight mb-6 animate-in slide-in-from-bottom-8 duration-700 delay-75">
             {isRegistering ? 'Start planning your perfect event' : 'Welcome back to Brinda'}
@@ -140,7 +140,7 @@ function CustomerLogin() {
         <div className="w-full max-w-[440px] space-y-10 relative z-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
           <div className="lg:hidden text-center mb-10">
             <Link to="/" className="inline-block">
-              <img src="/assets/brindalogo.png" alt="Brinda Caterings" className="h-14 w-auto mx-auto" />
+              <img src="/assets/brindalogo.png" alt="Brinda Catering" className="h-14 w-auto mx-auto" />
             </Link>
           </div>
 

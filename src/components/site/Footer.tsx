@@ -33,8 +33,8 @@ export function Footer() {
             <Link to="/" className="inline-block">
               <img 
                 src="/assets/brindalogo.png" 
-                alt="Brinda Caterings" 
-                className="h-12 w-auto object-contain sm:h-16" 
+                alt="Brinda Catering" 
+                className="h-16 w-auto object-contain sm:h-24" 
               />
             </Link>
             <p className="mt-8 max-w-sm text-sm leading-relaxed text-primary-foreground/50">

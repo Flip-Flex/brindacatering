@@ -77,7 +77,7 @@ export function Navbar() {
               "font-display font-bold text-xl tracking-widest uppercase transition-colors whitespace-pre",
               solid ? "text-primary" : "text-primary-foreground"
             )}>
-              {"BRINDA CATERINGS"}
+              {"Brinda Catering"}
             </span>
           </Link>
 
