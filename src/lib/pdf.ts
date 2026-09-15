@@ -12,7 +12,7 @@ export interface PDFQuoteData {
   tableData: (string | number)[][]; // ['#', 'Item Name', 'Category', 'Description']
 }
 
-export const generateQuotePDF = (data: PDFQuoteData) => {
+export const generateQuotePDF = async (data: PDFQuoteData) => {
   const { customerName, customerEmail, mobile, eventDate, guestCount, customNotes, tableData } = data;
   
   const doc = new jsPDF();
@@ -35,11 +35,27 @@ export const generateQuotePDF = (data: PDFQuoteData) => {
   doc.setFillColor(accent[0], accent[1], accent[2]);
   doc.rect(0, 28, pageWidth, 2, 'F');
   
-  // Header Text
-  doc.setTextColor(255, 255, 255);
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(24);
-  doc.text("BRINDA CATERERS", 20, 19);
+  // Load Logo
+  try {
+    const logoBase64 = await fetch('/assets/brindalogo.png')
+      .then(res => res.blob())
+      .then(blob => new Promise<string>((resolve) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as string);
+        reader.readAsDataURL(blob);
+      }));
+    
+    // Adjust dimensions as needed based on the logo's aspect ratio
+    // The header is 28px tall. Let's make the logo 22px tall.
+    doc.addImage(logoBase64, 'PNG', 20, 3, 22, 22);
+  } catch (err) {
+    console.error("Failed to load logo for PDF", err);
+    // Fallback if logo fails
+    doc.setTextColor(255, 255, 255);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(24);
+    doc.text("BRINDA CATERERS", 20, 19);
+  }
   
   // Quote Request Title
   doc.setTextColor(textDark[0], textDark[1], textDark[2]);

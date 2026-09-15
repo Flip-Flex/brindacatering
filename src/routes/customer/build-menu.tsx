@@ -120,7 +120,7 @@ function BuildMenuPage() {
 
   const selectedItemsList = items.filter(i => selectedItemIds.has(i.id));
 
-  const handleGeneratePDF = (customerName: string, customerEmail: string, mobile: string) => {
+  const handleGeneratePDF = async (customerName: string, customerEmail: string, mobile: string) => {
     let tableData: any[][] = [];
     
     if (selectedItemsList.length > 0 || customFoodsList.length > 0) {
@@ -141,7 +141,7 @@ function BuildMenuPage() {
       tableData = [...standardTableData, ...customTableData];
     }
     
-    generateQuotePDF({
+    await generateQuotePDF({
       customerName,
       customerEmail,
       mobile,

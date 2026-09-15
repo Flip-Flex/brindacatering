@@ -67,7 +67,7 @@ function AdminRequestsPage() {
     }
   };
 
-  const handleDownloadPDF = (req: any) => {
+  const handleDownloadPDF = async (req: any) => {
     try {
       const tableData: any[][] = [];
       if (req.selectedItems && Array.isArray(req.selectedItems)) {
@@ -84,7 +84,7 @@ function AdminRequestsPage() {
         });
       }
 
-      generateQuotePDF({
+      await generateQuotePDF({
         customerName: req.userName || 'Unknown Customer',
         customerEmail: req.userEmail || 'Unknown Email',
         mobile: req.mobileNumber || '',
