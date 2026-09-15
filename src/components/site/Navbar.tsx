@@ -22,7 +22,7 @@ export function Navbar() {
   const overlay = pathname === "/";
   const { settings } = useSiteSettings();
 
-  const visibleLinks = links.filter(link => 
+  const visibleLinks = links.filter(link =>
     link.to !== "/gallery" || settings.isGalleryEnabled
   );
 
@@ -60,84 +60,84 @@ export function Navbar() {
   return (
     <>
       <header
-      className={cn(
-        "fixed inset-x-0 top-0 z-50 transition-all duration-500",
-        solid ? "border-b border-border/60 bg-background/85 backdrop-blur-xl" : "bg-transparent",
-      )}
-    >
-      <nav
-        aria-label="Primary"
-        className="mx-auto flex h-[4.5rem] max-w-[1600px] items-center justify-between px-5 sm:px-8 lg:px-12"
+        className={cn(
+          "fixed inset-x-0 top-0 z-50 transition-all duration-500",
+          solid ? "border-b border-border/60 bg-background/85 backdrop-blur-xl" : "bg-transparent",
+        )}
       >
-        <Link
-          to="/"
-          className="flex items-center"
+        <nav
+          aria-label="Primary"
+          className="relative mx-auto flex h-[4.5rem] max-w-[1600px] items-center justify-between px-5 sm:px-8 lg:px-12"
         >
-          <span className={cn(
-            "font-display font-bold text-xl tracking-widest uppercase transition-colors whitespace-pre",
-            solid ? "text-primary" : "text-primary-foreground"
-          )}>
-            {"B R I N D A   C A T E R I N G S"}
-          </span>
-        </Link>
+          <Link
+            to="/"
+            className="flex items-center"
+          >
+            <span className={cn(
+              "font-display font-bold text-xl tracking-widest uppercase transition-colors whitespace-pre",
+              solid ? "text-primary" : "text-primary-foreground"
+            )}>
+              {"BRINDA CATERINGS"}
+            </span>
+          </Link>
 
-        <ul className="hidden items-center gap-9 lg:flex">
-          {visibleLinks.map((link) => {
-            const active = link.to === "/" ? pathname === "/" : pathname.startsWith(link.to);
-            return (
-              <li key={link.to}>
-                <Link
-                  to={link.to}
-                  className={cn(
-                    "relative text-sm uppercase tracking-[0.14em] transition-colors",
-                    solid ? "text-muted-foreground" : "text-primary-foreground/50",
-                    "hover:text-primary",
-                    solid ? "" : "hover:text-accent",
-                  )}
-                  aria-current={active ? "page" : undefined}
-                >
-                  {link.label}
-                  <span
+          <ul className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 hidden items-center gap-9 lg:flex">
+            {visibleLinks.map((link) => {
+              const active = link.to === "/" ? pathname === "/" : pathname.startsWith(link.to);
+              return (
+                <li key={link.to}>
+                  <Link
+                    to={link.to}
                     className={cn(
-                      "absolute -bottom-1.5 left-0 h-px w-full origin-left scale-x-0 transition-transform duration-300",
-                      solid ? "bg-primary" : "bg-gold",
-                      active && "scale-x-100",
+                      "relative text-sm uppercase tracking-[0.14em] transition-colors",
+                      solid ? "text-muted-foreground" : "text-primary-foreground/50",
+                      "hover:text-primary",
+                      solid ? "" : "hover:text-accent",
                     )}
-                  />
-                </Link>
-              </li>
-            );
-          })}
-        </ul>
+                    aria-current={active ? "page" : undefined}
+                  >
+                    {link.label}
+                    <span
+                      className={cn(
+                        "absolute -bottom-1.5 left-0 h-px w-full origin-left scale-x-0 transition-transform duration-300",
+                        solid ? "bg-primary" : "bg-gold",
+                        active && "scale-x-100",
+                      )}
+                    />
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
 
-        <div className="flex items-center gap-3">
-          <CTALink
-            to="/login"
-            variant={solid ? "primary" : "gold"}
-            withArrow={false}
-            className="hidden px-5 py-3 text-xs sm:inline-flex"
-          >
-            Sign In
-          </CTALink>
+          <div className="flex items-center gap-3">
+            <CTALink
+              to="/login"
+              variant={solid ? "primary" : "gold"}
+              withArrow={false}
+              className="hidden px-5 py-3 text-xs sm:inline-flex"
+            >
+              Sign In
+            </CTALink>
 
-          <button
-            type="button"
-            onClick={() => setOpen((v) => !v)}
-            aria-expanded={open}
-            aria-controls="mobile-menu"
-            aria-label={open ? "Close menu" : "Open menu"}
-            className={cn(
-              "inline-flex h-11 w-11 items-center justify-center rounded-sm border transition-colors lg:hidden",
-              solid
-                ? "border-border text-foreground"
-                : "border-ink-foreground/30 text-primary-foreground",
-            )}
-          >
-            {open ? <Menu className="hidden" /> : null}
-            {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-          </button>
-        </div>
-      </nav>
+            <button
+              type="button"
+              onClick={() => setOpen((v) => !v)}
+              aria-expanded={open}
+              aria-controls="mobile-menu"
+              aria-label={open ? "Close menu" : "Open menu"}
+              className={cn(
+                "inline-flex h-11 w-11 items-center justify-center rounded-sm border transition-colors lg:hidden",
+                solid
+                  ? "border-border text-foreground"
+                  : "border-ink-foreground/30 text-primary-foreground",
+              )}
+            >
+              {open ? <Menu className="hidden" /> : null}
+              {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            </button>
+          </div>
+        </nav>
       </header>
       {open ? (
         <div
