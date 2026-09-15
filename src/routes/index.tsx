@@ -174,11 +174,7 @@ function Home() {
             </div>
           )}
 
-          {/* Subtle Overlay for text readability - only needed when text is visible on desktop */}
-          <div className={cn(
-            "absolute inset-0 bg-black/20 transition-opacity duration-700 hidden md:block",
-            !isMuted && "opacity-0 pointer-events-none"
-          )} />
+
 
           {/* Navigation Buttons (Simple Arrows) */}
           <div className="absolute inset-0 flex items-center justify-between px-2 sm:px-6 opacity-0 transition-opacity duration-300 group-hover:opacity-100 z-20 pointer-events-none">
@@ -218,25 +214,7 @@ function Home() {
           </div>
         </div>
 
-        {/* Content Container (Below on mobile, Overlay on desktop) */}
-        <div className={cn(
-          "relative z-10 mx-auto max-w-[1200px] px-5 py-16 sm:px-8 lg:px-12 text-left md:text-center flex flex-col items-start md:items-center justify-center",
-          "md:absolute md:inset-0 md:py-0 transition-opacity duration-700 w-full",
-          !isMuted && "md:opacity-0 md:pointer-events-none"
-        )}>
-          <Reveal delay={100} className="flex flex-col items-start md:items-center justify-center w-full">
-            <p className="eyebrow text-white/80 tracking-[0.2em]">Our Story</p>
-            <h2 className="mt-6 font-display text-4xl sm:text-5xl md:text-6xl lg:text-8xl leading-[1.1] text-white drop-shadow-lg">
-              Tradition in every detail.
-            </h2>
-            <p className="mt-6 sm:mt-8 max-w-2xl text-sm sm:text-base md:text-lg leading-relaxed text-white/90 drop-shadow-md">
-              {aboutPageData.ourStory.intro}
-            </p>
-            <div className="mt-10 sm:mt-12">
-              <CTALink to="/about">Discover Our Story</CTALink>
-            </div>
-          </Reveal>
-        </div>
+
       </section>
 
       {/* 03 — Catering Highlights */}
