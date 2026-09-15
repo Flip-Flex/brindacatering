@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 import { Calendar, Users, Mail, Clock, Search, Filter, ArrowUpDown, FileDown, RefreshCw, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { generateQuotePDF } from '@/lib/pdf';
+import { menuItems } from '@/data/menu';
 
 export const Route = createFileRoute('/admin/requests')({
   component: AdminRequestsPage,
@@ -74,7 +75,8 @@ function AdminRequestsPage() {
         req.selectedItems.forEach((item: any, index: number) => {
           // Capitalize category ID for display
           const catName = item.category ? item.category.charAt(0).toUpperCase() + item.category.slice(1) : 'Other';
-          tableData.push([index + 1, item.name, catName, '']);
+          const fullItem = menuItems.find(mi => mi.id === item.id);
+          tableData.push([index + 1, item.name, catName, fullItem?.description || '']);
         });
       }
       
