@@ -74,7 +74,7 @@ export function Navbar() {
           className="flex items-center"
         >
           <span className={cn(
-            "font-bold text-lg tracking-widest uppercase transition-colors whitespace-pre",
+            "font-display font-bold text-xl tracking-widest uppercase transition-colors whitespace-pre",
             solid ? "text-primary" : "text-primary-foreground"
           )}>
             {"B R I N D A   C A T E R I N G S"}
