@@ -15,7 +15,7 @@ export interface PDFQuoteData {
 export const generateQuotePDF = async (data: PDFQuoteData) => {
   const { customerName, customerEmail, mobile, eventDate, guestCount, customNotes, tableData } = data;
   
-  const doc = new jsPDF();
+  const doc = new jsPDF({ compress: true });
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
   
@@ -37,17 +37,34 @@ export const generateQuotePDF = async (data: PDFQuoteData) => {
   
   // Load Logo
   try {
-    const logoBase64 = await fetch('/assets/brindalogo.png')
-      .then(res => res.blob())
-      .then(blob => new Promise<string>((resolve) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result as string);
-        reader.readAsDataURL(blob);
-      }));
+    const logoBase64 = await new Promise<string>((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return reject('No canvas context');
+        
+        // Scale down to a max height of 80px to save space
+        const targetHeight = 80;
+        const targetWidth = (img.width / img.height) * targetHeight;
+        
+        canvas.width = targetWidth;
+        canvas.height = targetHeight;
+        ctx.drawImage(img, 0, 0, targetWidth, targetHeight);
+        
+        // Fill transparent background with the header's dark green color
+        ctx.globalCompositeOperation = 'destination-over';
+        ctx.fillStyle = '#123c2a';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        // Export as heavily compressed JPEG
+        resolve(canvas.toDataURL('image/jpeg', 0.6));
+      };
+      img.onerror = reject;
+      img.src = '/assets/brindalogo.png';
+    });
     
-    // Adjust dimensions as needed based on the logo's aspect ratio
-    // The header is 28px tall. Let's make the logo 22px tall.
-    doc.addImage(logoBase64, 'PNG', 20, 3, 22, 22);
+    doc.addImage(logoBase64, 'JPEG', 20, 3, 22, 22, 'logo', 'FAST');
   } catch (err) {
     console.error("Failed to load logo for PDF", err);
     // Fallback if logo fails
