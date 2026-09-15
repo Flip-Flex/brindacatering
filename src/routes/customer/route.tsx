@@ -184,7 +184,7 @@ function AccountLayout() {
       <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-slate-200 flex h-16 shadow-[0_-2px_10px_rgba(0,0,0,0.06)]">
         <Link
           to="/customer/dashboard"
-          className={`flex-1 flex flex-col items-center justify-center gap-1 text-xs font-medium transition-colors ${
+          className={`relative flex-1 flex flex-col items-center justify-center gap-1 text-xs font-medium transition-colors ${
             isDashboard ? 'text-slate-900' : 'text-slate-400'
           }`}
         >
@@ -194,7 +194,7 @@ function AccountLayout() {
         </Link>
         <Link
           to="/customer/build-menu"
-          className={`flex-1 flex flex-col items-center justify-center gap-1 text-xs font-medium transition-colors ${
+          className={`relative flex-1 flex flex-col items-center justify-center gap-1 text-xs font-medium transition-colors ${
             isBuildMenu ? 'text-slate-900' : 'text-slate-400'
           }`}
         >
