@@ -30,8 +30,13 @@ export function Footer() {
         <div className="grid gap-12 md:grid-cols-2 lg:grid-cols-12 lg:gap-8 xl:gap-12">
           
           <div className="lg:col-span-4">
-            <p className="font-display text-4xl leading-tight">Brinda</p>
-            <p className="eyebrow mt-3 text-accent tracking-[0.2em]">Caterers</p>
+            <Link to="/" className="inline-block">
+              <img 
+                src="/assets/brindalogo.png" 
+                alt="Brinda Caterers" 
+                className="h-12 w-auto object-contain sm:h-16" 
+              />
+            </Link>
             <p className="mt-8 max-w-sm text-sm leading-relaxed text-primary-foreground/50">
               Professional catering for weddings, celebrations, corporate events and special
               occasions.

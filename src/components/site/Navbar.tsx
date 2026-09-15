@@ -71,17 +71,13 @@ export function Navbar() {
       >
         <Link
           to="/"
-          className={cn(
-            "font-display text-lg leading-tight tracking-tight transition-colors sm:text-xl",
-            solid ? "text-foreground" : "text-primary-foreground",
-          )}
+          className="flex items-center"
         >
-          <span className="block">Brinda</span>
-          <span
-            className={cn("eyebrow block text-xs", solid ? "text-primary" : "text-accent")}
-          >
-            Caterers
-          </span>
+          <img 
+            src="/assets/brindalogo.png" 
+            alt="Brinda Caterers" 
+            className="h-10 w-auto object-contain sm:h-12" 
+          />
         </Link>
 
         <ul className="hidden items-center gap-9 lg:flex">
