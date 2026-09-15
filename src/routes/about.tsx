@@ -62,33 +62,20 @@ function About() {
 
       {/* 02 — Our Story */}
       <section className="bg-background">
-        <div className="mx-auto max-w-[1200px] px-5 py-24 sm:px-8 lg:px-12 lg:py-32">
+        <div className="mx-auto max-w-[1000px] px-5 py-24 sm:px-8 lg:px-12 lg:py-32">
           <SectionHeading align="center" eyebrow="History" title="Our Story" />
-          
-          <div className="mt-16 grid grid-cols-1 md:grid-cols-12 gap-12 items-center">
-            <div className="md:col-span-5 flex justify-center md:justify-end">
-              <Reveal>
-                <img 
-                  src="/assets/brindalogo.png" 
-                  alt="Brinda Caterings Logo" 
-                  className="view-transition-logo h-48 md:h-72 w-auto object-contain drop-shadow-xl" 
-                />
-              </Reveal>
-            </div>
-            
-            <div className="md:col-span-7 space-y-8 text-justify text-lg leading-relaxed text-muted-foreground sm:text-xl pl-0 md:pl-8">
-              <Reveal delay={100}>
-                <p className="font-display text-2xl text-foreground text-left">
-                  {aboutPageData.ourStory.intro}
-                </p>
-              </Reveal>
-              <Reveal delay={200}>
-                <p>{aboutPageData.ourStory.background}</p>
-              </Reveal>
-              <Reveal delay={300}>
-                <p>{aboutPageData.ourStory.journey}</p>
-              </Reveal>
-            </div>
+          <div className="mx-auto mt-12 max-w-3xl space-y-8 text-justify text-lg leading-relaxed text-muted-foreground sm:text-xl">
+            <Reveal>
+              <p className="text-center font-display text-2xl text-foreground">
+                {aboutPageData.ourStory.intro}
+              </p>
+            </Reveal>
+            <Reveal delay={100}>
+              <p>{aboutPageData.ourStory.background}</p>
+            </Reveal>
+            <Reveal delay={200}>
+              <p>{aboutPageData.ourStory.journey}</p>
+            </Reveal>
           </div>
         </div>
       </section>

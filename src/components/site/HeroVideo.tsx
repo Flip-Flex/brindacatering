@@ -65,7 +65,7 @@ export function HeroVideo() {
           <img 
             src="/assets/brindalogo.png" 
             alt="Brinda Caterings" 
-            className="view-transition-logo h-24 md:h-32 lg:h-40 w-auto object-contain mb-8 drop-shadow-xl" 
+            className="h-24 md:h-32 lg:h-40 w-auto object-contain mb-8 drop-shadow-xl" 
           />
           <h1 className="hero-in text-6xl md:text-7xl lg:text-7xl font-extrabold uppercase leading-[0.85] tracking-tighter text-primary-foreground">
             {hero.eyebrow}
