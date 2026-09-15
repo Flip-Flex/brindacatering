@@ -39,7 +39,7 @@ export type BusinessInfo = {
 };
 
 export const business: BusinessInfo = {
-  name: "Brinda Caterers",
+  name: "Brinda Caterings",
   tagline: "Authentic flavours. Timeless traditions.",
   phone: env["VITE_BUSINESS_PHONE"] ?? "+91 99424 98402",
   whatsapp: env["VITE_WHATSAPP_NUMBER"] ?? "+91 90877 77047",
@@ -57,11 +57,11 @@ export const business: BusinessInfo = {
 };
 
 export const hero = {
-  eyebrow: "Brinda Caterers",
+  eyebrow: "Brinda Caterings",
   title: ["Authentic Flavours.", "Timeless Traditions."],
   subtitle:
     "Traditional South Indian catering crafted for weddings, celebrations, family functions and special occasions.",
-  primaryCta: { label: "Get a Catering Quote", to: "/contact" as const },
+  primaryCta: { label: "Book a Free Consultation", to: "/contact" as const },
 };
 
 export const cateringHighlights = [
@@ -150,7 +150,7 @@ export const celebrationMoments = [
 
 export const aboutPageData = {
   ourStory: {
-    intro: "Brinda Caterers was founded on a simple principle: to bring authentic South Indian hospitality to every celebration.",
+    intro: "Brinda Caterings was founded on a simple principle: to bring authentic South Indian hospitality to every celebration.",
     background: "What began as a humble kitchen fueled by a passion for traditional recipes has grown into a trusted name in catering. We started with a commitment to preserving the authentic flavours of our heritage, hand-pounding our own spices and refusing to compromise on the quality of our ingredients. Word of our dedication to taste and hygiene quickly spread, turning small family gatherings into our first grand wedding feasts.",
     journey: "Over the years, we have had the privilege of catering to countless weddings, corporate events, and intimate family milestones. While our scale has grown to serve thousands, our core philosophy remains completely unchanged. Every dish we serve is still a labour of love, crafted to evoke the warmth of a home-cooked meal and designed to make your most treasured moments unforgettable."
   },

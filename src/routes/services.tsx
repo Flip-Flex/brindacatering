@@ -15,7 +15,7 @@ export const Route = createFileRoute("/services")({
   component: Services,
   head: () => ({
     meta: [
-      { title: "Catering Services — Brinda Caterers | Cheyyar" },
+      { title: "Catering Services — Brinda Caterings | Cheyyar" },
       {
         name: "description",
         content:
@@ -23,7 +23,7 @@ export const Route = createFileRoute("/services")({
       },
       {
         property: "og:title",
-        content: "Catering Services — Brinda Caterers | Cheyyar",
+        content: "Catering Services — Brinda Caterings | Cheyyar",
       },
       {
         property: "og:description",

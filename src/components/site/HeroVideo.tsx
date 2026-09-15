@@ -62,6 +62,11 @@ export function HeroVideo() {
 
       <div className="relative mx-auto w-full max-w-[1600px] px-5 pt-32 pb-20 sm:px-8 sm:pb-24 lg:px-12">
         <div className="max-w-3xl">
+          <img 
+            src="/assets/brindalogo.png" 
+            alt="Brinda Caterings" 
+            className="h-24 md:h-32 lg:h-40 w-auto object-contain mb-8 drop-shadow-xl" 
+          />
           <h1 className="hero-in text-6xl md:text-7xl lg:text-7xl font-extrabold uppercase leading-[0.85] tracking-tighter text-primary-foreground">
             {hero.eyebrow}
           </h1>

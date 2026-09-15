@@ -148,7 +148,7 @@ export const generateQuotePDF = (data: PDFQuoteData) => {
   // --- Sign off ---
   doc.setFont("helvetica", "italic");
   doc.setTextColor(textMuted[0], textMuted[1], textMuted[2]);
-  doc.text("Thank you for choosing Brinda Caterers. We will get back to you with a quote soon.", pageWidth / 2, currentY, { align: "center" });
+  doc.text("Thank you for choosing Brinda Caterings. We will get back to you with a quote soon.", pageWidth / 2, currentY, { align: "center" });
 
   // --- Footer on all pages ---
   const pageCount = (doc as any).internal.getNumberOfPages();

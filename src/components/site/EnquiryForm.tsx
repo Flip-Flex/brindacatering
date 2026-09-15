@@ -67,7 +67,7 @@ export function EnquiryForm({ defaultService }: { defaultService?: string }) {
         <CheckCircle2 className="mx-auto h-10 w-10 text-primary" aria-hidden="true" />
         <h3 className="mt-5 font-display text-3xl">Enquiry received</h3>
         <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-muted-foreground">
-          Thank you for getting in touch with Brinda Caterers. We will review your event
+          Thank you for getting in touch with Brinda Caterings. We will review your event
           details and respond with the next steps.
         </p>
         <CTAButton

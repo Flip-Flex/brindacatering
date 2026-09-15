@@ -84,7 +84,7 @@ function AccountLayout() {
           >
             {sidebarOpen ? <X size={20} /> : <Menu size={20} />}
           </button>
-          <span className="font-bold text-base text-slate-900 tracking-tight">Brinda Caterers</span>
+          <span className="font-bold text-base text-slate-900 tracking-tight">Brinda Caterings</span>
         </div>
         <button
           onClick={handleLogout}
@@ -118,7 +118,7 @@ function AccountLayout() {
         >
           {/* Brand - Desktop only (mobile has the top bar) */}
           <div className="h-14 lg:h-16 flex items-center px-6 border-b border-slate-200 shrink-0">
-            <span className="font-bold text-lg text-slate-900 tracking-tight">Brinda Caterers</span>
+            <span className="font-bold text-lg text-slate-900 tracking-tight">Brinda Caterings</span>
           </div>
 
           {/* Navigation */}

@@ -11,7 +11,7 @@ type Props = {
 export function FinalCTA({
   title = "Planning Your Next Celebration?",
   description = "Tell us about your occasion and we'll help shape a South Indian menu and service plan around it.",
-  primaryCtaLabel = "Get a Catering Quote",
+  primaryCtaLabel = "Book a Free Consultation",
 }: Props = {}) {
   const wa = whatsAppLink();
   return (

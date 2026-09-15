@@ -84,7 +84,7 @@ function CustomerLogin() {
         
         <div className="relative z-10 p-12">
           <Link to="/" className="inline-block hover:opacity-90 transition-opacity">
-            <img src="/assets/brindalogo.png" alt="Brinda Caterers" className="h-14 w-auto drop-shadow-md" />
+            <img src="/assets/brindalogo.png" alt="Brinda Caterings" className="h-14 w-auto drop-shadow-md" />
           </Link>
         </div>
         
@@ -109,7 +109,7 @@ function CustomerLogin() {
         <div className="w-full max-w-[440px] space-y-10 relative z-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
           <div className="lg:hidden text-center mb-10">
             <Link to="/" className="inline-block">
-              <img src="/assets/brindalogo.png" alt="Brinda Caterers" className="h-14 w-auto mx-auto" />
+              <img src="/assets/brindalogo.png" alt="Brinda Caterings" className="h-14 w-auto mx-auto" />
             </Link>
           </div>
 

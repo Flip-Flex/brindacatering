@@ -73,11 +73,12 @@ export function Navbar() {
           to="/"
           className="flex items-center"
         >
-          <img 
-            src="/assets/brindalogo.png" 
-            alt="Brinda Caterers" 
-            className="h-10 w-auto object-contain sm:h-12" 
-          />
+          <span className={cn(
+            "font-bold text-lg tracking-widest uppercase transition-colors whitespace-pre",
+            solid ? "text-primary" : "text-primary-foreground"
+          )}>
+            {"B R I N D A   C A T E R I N G S"}
+          </span>
         </Link>
 
         <ul className="hidden items-center gap-9 lg:flex">

@@ -14,13 +14,13 @@ export const Route = createFileRoute("/about")({
   component: About,
   head: () => ({
     meta: [
-      { title: "About Brinda Caterers | Catering in Cheyyar" },
+      { title: "About Brinda Caterings | Catering in Cheyyar" },
       {
         name: "description",
         content:
-          "Learn about Brinda Caterers and our approach to authentic South Indian food, traditional hospitality and organised event service.",
+          "Learn about Brinda Caterings and our approach to authentic South Indian food, traditional hospitality and organised event service.",
       },
-      { property: "og:title", content: "About Brinda Caterers | Catering in Cheyyar" },
+      { property: "og:title", content: "About Brinda Caterings | Catering in Cheyyar" },
       {
         property: "og:description",
         content:
@@ -41,10 +41,10 @@ function About() {
       {/* 01 — About Hero */}
       <PageHero
         eyebrow="Our Story"
-        title="About Brinda Caterers"
+        title="About Brinda Caterings"
         intro="Authentic South Indian catering with a focus on traditional flavours and seamless hospitality."
         image={heroPoster}
-        alt="About Brinda Caterers"
+        alt="About Brinda Caterings"
       />
 
       <script
@@ -53,7 +53,7 @@ function About() {
           __html: JSON.stringify({
             "@context": "https://schema.org",
             "@type": "AboutPage",
-            "name": "About Brinda Caterers",
+            "name": "About Brinda Caterings",
             "description": aboutPageData.ourStory.intro,
             "url": "https://brindacaterers.com/about"
           })
