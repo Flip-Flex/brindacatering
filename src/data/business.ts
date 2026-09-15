@@ -15,6 +15,7 @@ import heroSouthIndian from "@/assets/hero-south-indian.jpg";
 import functionSouthIndian from "@/assets/function-south-indian.jpg";
 import weddingSouthIndian from "@/assets/wedding-south-indian.jpg";
 import dessertsImage from "@/assets/desserts.jpg";
+import chickenMuttonCurry from "@/assets/chicken-mutton-curry.jpg";
 
 export type BusinessInfo = {
   name: string;
@@ -94,7 +95,7 @@ export const foodHighlights = [
   },
   {
     name: "Chicken & Mutton",
-    image: functionSouthIndian,
+    image: chickenMuttonCurry,
   },
   {
     name: "Premium Seafood Curries",
