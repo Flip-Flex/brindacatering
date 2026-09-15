@@ -5,6 +5,8 @@ import { collection, query, where, getDocs, orderBy } from 'firebase/firestore';
 import { Button } from '@/components/ui/button';
 import { FileText, Plus, Calendar } from 'lucide-react';
 import { format } from 'date-fns';
+import { generateQuotePDF } from '@/lib/pdf';
+import { toast } from 'sonner';
 
 export const Route = createFileRoute('/customer/dashboard')({
   component: AccountDashboard,
@@ -43,6 +45,38 @@ function AccountDashboard() {
 
     fetchRequests();
   }, []);
+
+  const handleDownloadPDF = async (req: any) => {
+    try {
+      const tableData: any[][] = [];
+      if (req.selectedItems && Array.isArray(req.selectedItems)) {
+        req.selectedItems.forEach((item: any, index: number) => {
+          const catName = item.category ? item.category.charAt(0).toUpperCase() + item.category.slice(1) : 'Other';
+          tableData.push([index + 1, item.name, catName, '']);
+        });
+      }
+      
+      if (req.customFoods && Array.isArray(req.customFoods)) {
+        req.customFoods.forEach((food: string, index: number) => {
+          tableData.push([tableData.length + 1, food, 'Custom Request', '']);
+        });
+      }
+
+      await generateQuotePDF({
+        customerName: req.userName || 'Unknown Customer',
+        customerEmail: req.userEmail || 'Unknown Email',
+        mobile: req.mobileNumber || '',
+        eventDate: req.eventDate || 'TBD',
+        guestCount: req.guestCount || 'TBD',
+        customNotes: req.customNotes || '',
+        tableData
+      });
+      toast.success("Quote PDF generated successfully.");
+    } catch (err) {
+      console.error("Error generating PDF", err);
+      toast.error("Failed to generate PDF.");
+    }
+  };
 
   return (
     <div className="space-y-6 animate-in fade-in duration-700">
@@ -101,10 +135,8 @@ function AccountDashboard() {
                       Edit Menu
                     </Link>
                   </Button>
-                  <Button variant="default" size="sm" asChild>
-                    <a href={req.pdfUrl || '#'} download target="_blank" rel="noreferrer">
-                      Download PDF
-                    </a>
+                  <Button variant="default" size="sm" onClick={() => handleDownloadPDF(req)}>
+                    Download PDF
                   </Button>
                 </div>
               </div>
