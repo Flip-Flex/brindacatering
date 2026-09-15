@@ -37,7 +37,7 @@ export const generateQuotePDF = async (data: PDFQuoteData) => {
   
   // Load Logo
   try {
-    const logoBase64 = await fetch('/assets/brindalogo.png')
+    const logoBase64 = await fetch('/assets/brindapdflogo.png')
       .then(res => res.blob())
       .then(blob => new Promise<string>((resolve) => {
         const reader = new FileReader();
