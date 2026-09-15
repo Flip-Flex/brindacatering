@@ -65,13 +65,19 @@ export const generateQuotePDF = async (data: PDFQuoteData) => {
     });
     
     doc.addImage(logoBase64, 'JPEG', 20, 3, 22, 22, 'logo', 'FAST');
+    
+    // Add company name next to the logo
+    doc.setTextColor(255, 255, 255);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(20);
+    doc.text("Brinda Caterings", 46, 19);
   } catch (err) {
     console.error("Failed to load logo for PDF", err);
     // Fallback if logo fails
     doc.setTextColor(255, 255, 255);
     doc.setFont("helvetica", "bold");
     doc.setFontSize(24);
-    doc.text("BRINDA CATERERS", 20, 19);
+    doc.text("Brinda Caterings", 20, 19);
   }
   
   // Quote Request Title
