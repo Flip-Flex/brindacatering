@@ -106,7 +106,7 @@ function CustomerLogin() {
   return (
     <div className="min-h-screen w-full flex bg-background">
       {/* Left Panel - Image with Overlay */}
-      <div className="relative hidden lg:flex lg:w-1/2 flex-col justify-between overflow-hidden bg-ink">
+      <div className="relative hidden lg:flex lg:w-1/2 flex-col justify-center overflow-hidden bg-ink">
         <div className="absolute inset-0 z-0">
           <img 
             src="/assets/premium-chettinad.jpg" 
@@ -116,14 +116,11 @@ function CustomerLogin() {
           <div className="absolute inset-0 bg-gradient-to-t from-ink/90 via-ink/20 to-ink/90" />
         </div>
         
-        <div className="relative z-10 p-12">
-          <Link to="/" className="inline-block hover:opacity-90 transition-opacity">
-            <img src="/assets/brindalogo.png" alt="Brinda Caterings" className="h-14 w-auto drop-shadow-md" />
-          </Link>
-        </div>
-        
         <div className="relative z-10 p-12 max-w-xl">
-          <h2 className="font-display text-4xl lg:text-5xl text-primary-foreground leading-tight mb-6 animate-in slide-in-from-bottom-8 duration-700">
+          <Link to="/" className="inline-block hover:opacity-90 transition-opacity mb-8 animate-in slide-in-from-bottom-8 duration-700">
+            <img src="/assets/brindalogo.png" alt="Brinda Caterings" className="h-24 md:h-32 w-auto drop-shadow-2xl" />
+          </Link>
+          <h2 className="font-display text-4xl lg:text-5xl text-primary-foreground leading-tight mb-6 animate-in slide-in-from-bottom-8 duration-700 delay-75">
             {isRegistering ? 'Start planning your perfect event' : 'Welcome back to Brinda'}
           </h2>
           <p className="text-primary-foreground/70 text-lg leading-relaxed animate-in slide-in-from-bottom-8 duration-700 delay-150">
