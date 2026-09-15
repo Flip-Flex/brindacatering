@@ -37,32 +37,47 @@ export const generateQuotePDF = async (data: PDFQuoteData) => {
   
   // Load Logo
   try {
-    const logoBase64 = await new Promise<string>((resolve, reject) => {
-      const img = new Image();
-      img.onload = () => {
-        const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d');
-        if (!ctx) return reject('No canvas context');
-        
-        // Scale down to a max height of 80px to save space
-        const targetHeight = 80;
-        const targetWidth = (img.width / img.height) * targetHeight;
-        
-        canvas.width = targetWidth;
-        canvas.height = targetHeight;
-        ctx.drawImage(img, 0, 0, targetWidth, targetHeight);
-        
-        // Fill transparent background with the header's dark green color
-        ctx.globalCompositeOperation = 'destination-over';
-        ctx.fillStyle = '#123c2a';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        
-        // Export as heavily compressed JPEG
-        resolve(canvas.toDataURL('image/jpeg', 0.6));
-      };
-      img.onerror = reject;
-      img.src = '/assets/brindalogo.png';
-    });
+    const logoBase64 = await fetch('/assets/brindalogo.png')
+      .then(res => {
+        if (!res.ok) throw new Error("Failed to fetch logo");
+        return res.blob();
+      })
+      .then(blob => new Promise<string>((resolve, reject) => {
+        const url = URL.createObjectURL(blob);
+        const img = new Image();
+        img.onload = () => {
+          try {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            if (!ctx) throw new Error('No canvas context');
+            
+            // Scale down to a max height of 80px to save space
+            const targetHeight = 80;
+            const targetWidth = (img.width / img.height) * targetHeight;
+            
+            canvas.width = targetWidth;
+            canvas.height = targetHeight;
+            ctx.drawImage(img, 0, 0, targetWidth, targetHeight);
+            
+            // Fill transparent background with the header's dark green color
+            ctx.globalCompositeOperation = 'destination-over';
+            ctx.fillStyle = '#123c2a';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Export as heavily compressed JPEG
+            resolve(canvas.toDataURL('image/jpeg', 0.6));
+          } catch (e) {
+            reject(e);
+          } finally {
+            URL.revokeObjectURL(url);
+          }
+        };
+        img.onerror = () => {
+          URL.revokeObjectURL(url);
+          reject(new Error("Failed to load image"));
+        };
+        img.src = url;
+      }));
     
     doc.addImage(logoBase64, 'JPEG', 20, 3, 22, 22, 'logo', 'FAST');
     
