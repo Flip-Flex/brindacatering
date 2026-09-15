@@ -77,14 +77,7 @@ function AccountLayout() {
       {/* ─── MOBILE / TABLET TOP BAR ─── */}
       <header className="lg:hidden sticky top-0 z-40 h-14 bg-white border-b border-slate-200 flex items-center justify-between px-4">
         <div className="flex items-center gap-3">
-          <button
-            onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="h-9 w-9 flex items-center justify-center rounded-lg text-slate-600 hover:bg-slate-100 transition-colors"
-            aria-label="Toggle menu"
-          >
-            {sidebarOpen ? <X size={20} /> : <Menu size={20} />}
-          </button>
-          <span className="font-bold text-base text-slate-900 tracking-tight">Brinda Caterings</span>
+          <span className="font-bold text-base text-slate-900 tracking-tight ml-2">Brinda Caterings</span>
         </div>
         <button
           onClick={handleLogout}
@@ -209,13 +202,6 @@ function AccountLayout() {
           <span>Build Menu</span>
           {isBuildMenu && <div className="absolute top-0 left-1/4 right-1/4 h-0.5 bg-slate-900 rounded-b-full" />}
         </Link>
-        <button
-          onClick={handleLogout}
-          className="flex-1 flex flex-col items-center justify-center gap-1 text-xs font-medium text-red-500 transition-colors"
-        >
-          <LogOut size={20} />
-          <span>Sign Out</span>
-        </button>
       </nav>
     </div>
   );
