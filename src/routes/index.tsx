@@ -51,7 +51,10 @@ export const Route = createFileRoute("/")({
 });
 
 function Home() {
-  const [highlights, setHighlights] = useState(initialHighlights);
+  const [highlights, setHighlights] = useState<any[]>([]);
+  const [isLoadingHighlights, setIsLoadingHighlights] = useState(true);
+  const [signatureDishes, setSignatureDishes] = useState<any[]>([]);
+  const [isLoadingSignatureDishes, setIsLoadingSignatureDishes] = useState(true);
   const [ourStoryImage, setOurStoryImage] = useState<string | null>(null);
   const [activeVideoIndex, setActiveVideoIndex] = useState(0);
   
@@ -125,12 +128,36 @@ function Home() {
           const dbHighlights = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
           // We cast and map to ensure we match the shape expected by the UI
           setHighlights(dbHighlights as any);
+        } else {
+          setHighlights(initialHighlights);
         }
       } catch (err) {
         console.error("Failed to load highlights", err);
+        setHighlights(initialHighlights);
+      } finally {
+        setIsLoadingHighlights(false);
       }
     };
     fetchHighlights();
+
+    const fetchSignatureDishes = async () => {
+      try {
+        const q = query(collection(db!, 'foodHighlights'), orderBy('order'));
+        const snapshot = await getDocs(q);
+        if (!snapshot.empty) {
+          const dbDishes = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+          setSignatureDishes(dbDishes as any);
+        } else {
+          setSignatureDishes(foodHighlights);
+        }
+      } catch (err) {
+        console.error("Failed to load signature dishes", err);
+        setSignatureDishes(foodHighlights);
+      } finally {
+        setIsLoadingSignatureDishes(false);
+      }
+    };
+    fetchSignatureDishes();
 
     const unsubscribeStory = onSnapshot(doc(db, 'siteSettings', 'ourStoryImage'), (docSnap) => {
       if (docSnap.exists()) {
@@ -227,7 +254,13 @@ function Home() {
             intro="Professional service shaped around the scale and traditions of your occasion."
           />
           <div className="mt-16 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {highlights.map((highlight: any, index: number) => (
+            {isLoadingHighlights ? (
+              Array(4).fill(0).map((_, i) => (
+                <div key={i} className="aspect-[3/4] w-full rounded-2xl bg-zinc-200/50 dark:bg-zinc-800 animate-pulse flex items-center justify-center relative overflow-hidden shadow-sm">
+                  <Loader2 className="h-8 w-8 text-zinc-400 animate-spin" />
+                </div>
+              ))
+            ) : highlights.map((highlight: any, index: number) => (
               <Reveal
                 as="article"
                 key={highlight.title || highlight.id}
@@ -268,8 +301,17 @@ function Home() {
             intro="A glimpse into the authentic South Indian flavours we bring to your celebration."
           />
           <ul className="mt-16 grid gap-x-8 gap-y-12 sm:grid-cols-2 lg:grid-cols-4">
-            {foodHighlights.map((item, index) => (
-              <Reveal as="li" key={item.name} delay={index * 80}>
+            {isLoadingSignatureDishes ? (
+              Array(4).fill(0).map((_, i) => (
+                <li key={i}>
+                  <div className="group overflow-hidden rounded-xl shadow-sm bg-zinc-200/50 dark:bg-zinc-800 animate-pulse flex items-center justify-center aspect-square w-full">
+                    <Loader2 className="h-8 w-8 text-zinc-400 animate-spin" />
+                  </div>
+                  <div className="mt-6 mx-auto h-6 w-3/4 rounded bg-zinc-200/50 dark:bg-zinc-800 animate-pulse"></div>
+                </li>
+              ))
+            ) : signatureDishes.map((item, index) => (
+              <Reveal as="li" key={item.name || item.id} delay={index * 80}>
                 <div className="group overflow-hidden rounded-xl shadow-sm">
                   <img
                     src={item.image}
