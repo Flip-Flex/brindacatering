@@ -209,13 +209,38 @@ function BuildMenuPage() {
     updateActiveEvent({ customFoods: activeEvent.customFoods.filter((_, i) => i !== index) });
   };
 
+  const validateCurrentEvent = () => {
+    const hasPicks = activeEvent.selectedItemIds.size > 0 || activeEvent.customFoods.length > 0;
+    const hasDate = !!activeEvent.eventDate;
+    const hasGuests = !!activeEvent.guestCount;
+
+    // If completely empty, they can move freely
+    if (!hasPicks && !hasDate && !hasGuests) return true;
+
+    if (hasPicks && (!hasDate || !hasGuests)) {
+      toast.error(`Please enter Date and Guest Count for ${activeEvent.label}.`);
+      return false;
+    }
+
+    if (!hasPicks && (hasDate || hasGuests)) {
+      toast.error(`Please select at least one menu item for ${activeEvent.label}.`);
+      return false;
+    }
+
+    return true;
+  };
+
   const goToEvent = (id: string) => {
+    if (id !== activeEventId && !validateCurrentEvent()) {
+      return;
+    }
     setActiveEventId(id);
     setCustomFoodInput('');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const goToNextEvent = () => {
+    if (!validateCurrentEvent()) return;
     const nextIndex = activeIndex + 1;
     if (nextIndex < events.length) {
       toast.success(`${activeEvent.label} saved locally`);
@@ -224,6 +249,7 @@ function BuildMenuPage() {
   };
 
   const handleSaveOnly = () => {
+    if (!validateCurrentEvent()) return;
     toast.success(`${activeEvent.label} saved locally`);
   };
 
@@ -586,9 +612,20 @@ function BuildMenuPage() {
             </p>
           </div>
           
-          <Dialog open={isSubmitModalOpen} onOpenChange={setIsSubmitModalOpen}>
+          <Dialog open={isSubmitModalOpen} onOpenChange={(open) => {
+            if (open) {
+              if (!validateCurrentEvent()) return;
+              setIsSubmitModalOpen(true);
+            } else {
+              setIsSubmitModalOpen(false);
+            }
+          }}>
             <DialogTrigger asChild>
-              <Button size="lg" className="px-8" disabled={eventsWithSelections.length === 0}>
+              <Button size="lg" className="px-8" disabled={eventsWithSelections.length === 0} onClick={(e) => {
+                if (!validateCurrentEvent()) {
+                  e.preventDefault();
+                }
+              }}>
                 {edit ? 'Update Quote' : 'Get Quote'}
               </Button>
             </DialogTrigger>

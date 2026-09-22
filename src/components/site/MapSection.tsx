@@ -10,35 +10,23 @@ export function MapSection() {
           Find us
         </h2>
         <div className="mt-8 overflow-hidden rounded-sm border border-border bg-card">
-          {business.googleMapsEmbedUrl ? (
-            <iframe
-              title={`Map showing the location of ${business.name}`}
-              src={business.googleMapsEmbedUrl}
-              className="h-[420px] w-full border-0"
-              loading="lazy"
-              referrerPolicy="no-referrer-when-downgrade"
-            />
-          ) : (
-            <div className="flex h-[280px] flex-col items-center justify-center gap-3 px-6 text-center">
-              <MapPin className="h-6 w-6 text-primary" aria-hidden="true" />
-              <p className="font-display text-2xl">Location to be added</p>
-              <p className="max-w-md text-sm text-muted-foreground">
-                Add the Google Maps embed URL in the business configuration and the map will appear
-                here.
-              </p>
+          <div className="flex h-[320px] flex-col items-center justify-center gap-4 px-6 text-center bg-muted/20">
+            <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center mb-2">
+              <MapPin className="h-8 w-8 text-primary" aria-hidden="true" />
             </div>
-          )}
+            <p className="font-display text-2xl font-semibold tracking-tight text-foreground uppercase">Location Temporarily Unavailable</p>
+            <p className="max-w-md text-base text-muted-foreground leading-relaxed">
+              Please call our contact number to get the exact location details.
+            </p>
+            <CTAAnchor
+              href={`tel:${business.phone}`}
+              variant="default"
+              className="mt-4"
+            >
+              Call {business.phone}
+            </CTAAnchor>
+          </div>
         </div>
-        {business.googleMapsUrl ? (
-          <CTAAnchor
-            href={business.googleMapsUrl}
-            target="_blank"
-            variant="outline"
-            className="mt-8 text-foreground"
-          >
-            Get Directions
-          </CTAAnchor>
-        ) : null}
       </div>
     </section>
   );

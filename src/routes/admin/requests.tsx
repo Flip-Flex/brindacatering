@@ -7,7 +7,10 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
-import { Calendar, Users, Mail, Clock, Search, Filter, ArrowUpDown, FileDown, RefreshCw, Trash2 } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Calendar, Users, Mail, Clock, Search, Filter, ArrowUpDown, FileDown, RefreshCw, Trash2, IndianRupee } from 'lucide-react';
 import { format } from 'date-fns';
 import { generateQuotePDF } from '@/lib/pdf';
 import { menuItems } from '@/data/menu';
@@ -27,6 +30,12 @@ function AdminRequestsPage() {
   const [refreshing, setRefreshing] = useState(false);
   
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
+
+  // Pricing Modal State
+  const [pricingModalOpen, setPricingModalOpen] = useState(false);
+  const [selectedQuoteForPricing, setSelectedQuoteForPricing] = useState<any>(null);
+  const [pricingState, setPricingState] = useState<Record<string, any>>({});
+  const [activeEventTab, setActiveEventTab] = useState<string>('');
 
   const toggleExpand = (id: string) => {
     setExpandedIds(prev => {
@@ -56,6 +65,115 @@ function AdminRequestsPage() {
   useEffect(() => {
     fetchRequests();
   }, []);
+
+  const openPricingModal = (req: any) => {
+    setSelectedQuoteForPricing(req);
+    // Initialize pricing state from req.pricing if it exists, else generate it
+    let initialPricing: Record<string, any> = {};
+    let firstEvent = '';
+
+    if (req.pricing) {
+      for (const [key, val] of Object.entries(req.pricing)) {
+        if (!firstEvent) firstEvent = key;
+        if (Array.isArray(val)) {
+          // Migrate old array format
+          initialPricing[key] = {
+            strategy: 'itemized',
+            perPlatePrice: 0,
+            perPlateQuantity: val.length > 0 ? val[0].quantity : parseInt(req.guestCount || '0', 10) || 0,
+            perPlateDiscount: 0,
+            items: val
+          };
+        } else {
+          initialPricing[key] = val;
+        }
+      }
+    } else {
+      // Build from events
+      if (req.events && req.events.length > 0) {
+        req.events.forEach((ev: any) => {
+          const eventName = ev.eventName || 'Event';
+          if (!firstEvent) firstEvent = eventName;
+          
+          let items: any[] = [];
+          if (ev.selectedItems) {
+            ev.selectedItems.forEach((item: any) => items.push({ name: item.name, category: item.category || 'Other', quantity: parseInt(ev.guestCount || '0', 10) || 0, pricePerPlate: 0, discount: 0 }));
+          }
+          if (ev.customFoods) {
+            ev.customFoods.forEach((food: string) => items.push({ name: food, category: 'Custom', quantity: parseInt(ev.guestCount || '0', 10) || 0, pricePerPlate: 0, discount: 0 }));
+          }
+          initialPricing[eventName] = {
+            strategy: 'itemized',
+            perPlatePrice: 0,
+            perPlateQuantity: parseInt(ev.guestCount || '0', 10) || 0,
+            perPlateDiscount: 0,
+            items
+          };
+        });
+      } else {
+        // Legacy
+        firstEvent = 'Main Event';
+        let items: any[] = [];
+        if (req.selectedItems) {
+          req.selectedItems.forEach((item: any) => items.push({ name: item.name, category: item.category || 'Other', quantity: parseInt(req.guestCount || '0', 10) || 0, pricePerPlate: 0, discount: 0 }));
+        }
+        if (req.customFoods) {
+          req.customFoods.forEach((food: string) => items.push({ name: food, category: 'Custom', quantity: parseInt(req.guestCount || '0', 10) || 0, pricePerPlate: 0, discount: 0 }));
+        }
+        initialPricing['Main Event'] = {
+          strategy: 'itemized',
+          perPlatePrice: 0,
+          perPlateQuantity: parseInt(req.guestCount || '0', 10) || 0,
+          perPlateDiscount: 0,
+          items
+        };
+      }
+    }
+    
+    setPricingState(initialPricing);
+    setActiveEventTab(firstEvent);
+    setPricingModalOpen(true);
+  };
+
+  const handlePricingChange = (eventName: string, itemIndex: number, field: string, value: string) => {
+    setPricingState(prev => {
+      const next = { ...prev };
+      const numValue = parseInt(value || '0', 10);
+      next[eventName].items[itemIndex] = {
+        ...next[eventName].items[itemIndex],
+        [field]: isNaN(numValue) ? 0 : numValue
+      };
+      return next;
+    });
+  };
+
+  const handleEventPricingChange = (eventName: string, field: string, value: string | number) => {
+    setPricingState(prev => {
+      const next = { ...prev };
+      if (field === 'strategy') {
+        next[eventName] = { ...next[eventName], strategy: value };
+      } else {
+        const numValue = parseInt(value as string || '0', 10);
+        next[eventName] = { ...next[eventName], [field]: isNaN(numValue) ? 0 : numValue };
+      }
+      return next;
+    });
+  };
+
+  const savePricing = async () => {
+    if (!selectedQuoteForPricing) return;
+    try {
+      await updateDoc(doc(db!, 'menuRequests', selectedQuoteForPricing.id), {
+        pricing: pricingState
+      });
+      setRequests(prev => prev.map(r => r.id === selectedQuoteForPricing.id ? { ...r, pricing: pricingState } : r));
+      toast.success("Pricing saved successfully!");
+      setPricingModalOpen(false);
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to save pricing.");
+    }
+  };
 
   const updateStatus = async (requestId: string, newStatus: string) => {
     try {
@@ -133,7 +251,8 @@ function AdminRequestsPage() {
         customerName: req.userName || 'Unknown Customer',
         customerEmail: req.userEmail || 'Unknown Email',
         mobile: req.mobileNumber || '',
-        events: pdfEvents
+        events: pdfEvents,
+        pricing: req.pricing // Pass pricing down to PDF generator
       });
       toast.success("Quote PDF generated successfully.");
     } catch (err) {
@@ -215,7 +334,6 @@ function AdminRequestsPage() {
                 <SelectItem value="pending">Pending</SelectItem>
                 <SelectItem value="reviewed">Reviewed</SelectItem>
                 <SelectItem value="quoted">Quoted</SelectItem>
-                <SelectItem value="completed">Completed</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -291,6 +409,10 @@ function AdminRequestsPage() {
                       </CardDescription>
                     </div>
                     <div className="flex items-center gap-3">
+                      <Button variant="outline" size="sm" onClick={() => openPricingModal(req)} className="hidden sm:flex bg-background border-primary/20 hover:bg-primary/5 text-primary">
+                        <IndianRupee size={16} className="mr-2" />
+                        Pricing
+                      </Button>
                       <Button variant="outline" size="sm" onClick={() => handleDownloadPDF(req)} className="hidden sm:flex bg-background">
                         <FileDown size={16} className="mr-2 text-primary" />
                         View PDF
@@ -303,7 +425,6 @@ function AdminRequestsPage() {
                           <SelectItem value="pending">Pending</SelectItem>
                           <SelectItem value="reviewed">Reviewed</SelectItem>
                           <SelectItem value="quoted">Quoted</SelectItem>
-                          <SelectItem value="completed">Completed</SelectItem>
                         </SelectContent>
                       </Select>
                       <Button 
@@ -364,6 +485,178 @@ function AdminRequestsPage() {
           })
         )}
       </div>
+      <Dialog open={pricingModalOpen} onOpenChange={setPricingModalOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
+          <DialogHeader>
+            <DialogTitle>Quotation Builder</DialogTitle>
+            <DialogDescription>
+              Assign per-plate prices and discounts for {selectedQuoteForPricing?.userName}'s requested menu.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="flex-1 overflow-y-auto pr-2 min-h-0 py-2">
+            {Object.keys(pricingState).length > 0 && (
+              <Tabs value={activeEventTab} onValueChange={setActiveEventTab} className="w-full">
+                <TabsList className="mb-4 flex flex-wrap h-auto">
+                  {Object.keys(pricingState).map(evName => (
+                    <TabsTrigger key={evName} value={evName}>{evName}</TabsTrigger>
+                  ))}
+                </TabsList>
+                {Object.keys(pricingState).map(evName => {
+                  const evState = pricingState[evName];
+                  const items = evState?.items || [];
+                  
+                  let eventTotal = 0;
+                  if (evState.strategy === 'per_plate') {
+                    eventTotal = (evState.perPlateQuantity * evState.perPlatePrice) * (1 - (evState.perPlateDiscount / 100));
+                  } else {
+                    eventTotal = items.reduce((sum: number, item: any) => sum + ((item.quantity * item.pricePerPlate) * (1 - ((item.discount || 0) / 100))), 0);
+                  }
+                  
+                  return (
+                    <TabsContent key={evName} value={evName} className="space-y-4 m-0">
+                      
+                      <div className="flex gap-2 mb-4 bg-muted/30 p-2 rounded-lg border">
+                        <Button 
+                          variant={evState.strategy === 'per_plate' ? 'default' : 'ghost'} 
+                          onClick={() => handleEventPricingChange(evName, 'strategy', 'per_plate')}
+                          className="flex-1"
+                        >
+                          Flat Per Plate
+                        </Button>
+                        <Button 
+                          variant={evState.strategy === 'itemized' ? 'default' : 'ghost'} 
+                          onClick={() => handleEventPricingChange(evName, 'strategy', 'itemized')}
+                          className="flex-1"
+                        >
+                          Itemized (Per Dish)
+                        </Button>
+                      </div>
+
+                      {evState.strategy === 'per_plate' ? (
+                        <div className="space-y-6">
+                          <div className="grid grid-cols-3 gap-4">
+                            <div className="space-y-2">
+                              <label className="text-sm font-medium">Guests / Quantity</label>
+                              <Input 
+                                type="number" min="0" 
+                                value={evState.perPlateQuantity || ''} 
+                                onChange={(e) => handleEventPricingChange(evName, 'perPlateQuantity', e.target.value)} 
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <label className="text-sm font-medium">Price Per Plate (₹)</label>
+                              <Input 
+                                type="number" min="0" 
+                                value={evState.perPlatePrice || ''} 
+                                onChange={(e) => handleEventPricingChange(evName, 'perPlatePrice', e.target.value)} 
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <label className="text-sm font-medium">Discount (%)</label>
+                              <Input 
+                                type="number" min="0" max="100" 
+                                value={evState.perPlateDiscount || ''} 
+                                onChange={(e) => handleEventPricingChange(evName, 'perPlateDiscount', e.target.value)} 
+                              />
+                            </div>
+                          </div>
+
+                          <div className="bg-muted/10 border rounded-md p-4">
+                            <h4 className="text-sm font-semibold mb-3">Included Dishes</h4>
+                            <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                              {items.map((it: any, i: number) => (
+                                <div key={i} className="text-sm flex items-start gap-2">
+                                  <span className="text-primary">•</span>
+                                  {it.name}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="border rounded-md overflow-hidden bg-background">
+                          <Table>
+                            <TableHeader className="bg-muted/50">
+                              <TableRow>
+                                <TableHead className="w-[50px]">S.No</TableHead>
+                                <TableHead>Type</TableHead>
+                                <TableHead className="w-[100px]">Qty</TableHead>
+                                <TableHead className="w-[120px]">Price/Plate</TableHead>
+                                <TableHead className="w-[100px]">Discount %</TableHead>
+                                <TableHead className="w-[120px] text-right">Total</TableHead>
+                              </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                              {items.length === 0 ? (
+                                <TableRow><TableCell colSpan={6} className="text-center py-6 text-muted-foreground">No items selected.</TableCell></TableRow>
+                              ) : items.map((item: any, idx: number) => {
+                                const lineTotal = (item.quantity * item.pricePerPlate) * (1 - ((item.discount || 0) / 100));
+                                return (
+                                  <TableRow key={idx}>
+                                    <TableCell className="font-medium text-muted-foreground">{idx + 1}</TableCell>
+                                    <TableCell>
+                                      <div className="font-medium">{item.name}</div>
+                                      <div className="text-xs text-muted-foreground capitalize">{item.category}</div>
+                                    </TableCell>
+                                    <TableCell>
+                                      <Input 
+                                        type="number" 
+                                        min="0"
+                                        className="h-8"
+                                        value={item.quantity || ''}
+                                        onChange={(e) => handlePricingChange(evName, idx, 'quantity', e.target.value)}
+                                      />
+                                    </TableCell>
+                                    <TableCell>
+                                      <Input 
+                                        type="number" 
+                                        min="0"
+                                        className="h-8"
+                                        value={item.pricePerPlate || ''}
+                                        onChange={(e) => handlePricingChange(evName, idx, 'pricePerPlate', e.target.value)}
+                                      />
+                                    </TableCell>
+                                    <TableCell>
+                                      <Input 
+                                        type="number" 
+                                        min="0"
+                                        max="100"
+                                        className="h-8"
+                                        value={item.discount || ''}
+                                        onChange={(e) => handlePricingChange(evName, idx, 'discount', e.target.value)}
+                                      />
+                                    </TableCell>
+                                    <TableCell className="text-right font-medium">
+                                      ₹{Math.max(0, lineTotal).toLocaleString()}
+                                    </TableCell>
+                                  </TableRow>
+                                )
+                              })}
+                            </TableBody>
+                          </Table>
+                        </div>
+                      )}
+
+                      <div className="flex justify-end p-4 bg-muted/30 rounded-lg border">
+                        <div className="text-lg">
+                          <span className="text-muted-foreground mr-4">Total for {evName}:</span>
+                          <span className="font-bold text-primary">₹{Math.max(0, eventTotal).toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+                        </div>
+                      </div>
+                    </TabsContent>
+                  )
+                })}
+              </Tabs>
+            )}
+          </div>
+          
+          <DialogFooter className="mt-4 pt-4 border-t">
+            <Button variant="outline" onClick={() => setPricingModalOpen(false)}>Cancel</Button>
+            <Button onClick={savePricing}>Save Quotation</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

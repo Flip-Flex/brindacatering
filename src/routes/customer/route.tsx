@@ -13,6 +13,7 @@ function AccountLayout() {
   const [loading, setLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [userData, setUserData] = useState<any>(null);
+  const [authUser, setAuthUser] = useState<any>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const navigate = useNavigate();
   const matchRoute = useMatchRoute();
@@ -24,6 +25,7 @@ function AccountLayout() {
     if (!auth) return;
     const unsubscribe = auth.onAuthStateChanged(async (user) => {
       if (user) {
+        setAuthUser(user);
         setIsAuthenticated(true);
         try {
           const userDoc = await getDoc(doc(db!, 'customers', user.uid));
@@ -34,6 +36,7 @@ function AccountLayout() {
           console.error("Error fetching user data", e);
         }
       } else {
+        setAuthUser(null);
         setIsAuthenticated(false);
       }
       setLoading(false);
@@ -49,12 +52,12 @@ function AccountLayout() {
   };
 
   const displayName = userData?.name ||
-    auth?.currentUser?.displayName ||
-    (auth?.currentUser?.email
-      ? auth.currentUser.email.split('@')[0].charAt(0).toUpperCase() + auth.currentUser.email.split('@')[0].slice(1)
+    authUser?.displayName ||
+    (authUser?.email
+      ? authUser.email.split('@')[0].charAt(0).toUpperCase() + authUser.email.split('@')[0].slice(1)
       : 'Customer');
 
-  const displayEmail = userData?.email || auth?.currentUser?.email;
+  const displayEmail = userData?.email || authUser?.email || 'No email provided';
 
   if (loading) {
     return (

@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { auth, db } from '@/lib/firebase';
 import { collection, query, where, getDocs, orderBy, deleteDoc, doc } from 'firebase/firestore';
 import { Button } from '@/components/ui/button';
-import { FileText, Plus, Calendar, Trash2 } from 'lucide-react';
+import { FileText, Plus, Calendar, Trash2, Edit2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { generateQuotePDF } from '@/lib/pdf';
 import { toast } from 'sonner';
@@ -43,7 +43,16 @@ function AccountDashboard() {
   };
 
   useEffect(() => {
-    fetchRequests();
+    if (!auth) return;
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      if (user) {
+        fetchRequests();
+      } else {
+        setRequests([]);
+        setLoading(false);
+      }
+    });
+    return () => unsubscribe();
   }, []);
 
   const handleDeleteQuote = async (id: string) => {
@@ -58,7 +67,7 @@ function AccountDashboard() {
     }
   };
 
-  const handleDownloadPDF = async (req: any) => {
+  const handleDownloadPDF = async (req: any, includePricing: boolean = false) => {
     try {
       let pdfEvents: any[] = [];
 
@@ -112,7 +121,8 @@ function AccountDashboard() {
         customerName: req.userName || 'Unknown Customer',
         customerEmail: req.userEmail || 'Unknown Email',
         mobile: req.mobileNumber || '',
-        events: pdfEvents
+        events: pdfEvents,
+        ...(includePricing && req.pricing ? { pricing: req.pricing } : {})
       });
       toast.success("Quote PDF generated successfully.");
     } catch (err) {
@@ -174,7 +184,6 @@ function AccountDashboard() {
                     <div className="flex items-center gap-3 mb-2">
                       <h3 className="font-medium text-slate-900">Custom Menu Quote</h3>
                       <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium border ${
-                        req.status === 'completed' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
                         req.status === 'quoted' ? 'bg-indigo-50 text-indigo-700 border-indigo-200' :
                         req.status === 'reviewed' ? 'bg-blue-50 text-blue-700 border-blue-200' :
                         'bg-amber-50 text-amber-700 border-amber-200'
@@ -194,15 +203,38 @@ function AccountDashboard() {
                     </div>
                   </div>
                   <div className="flex items-center gap-3 shrink-0">
+                    {(req.status || '').toLowerCase() === 'quoted' ? (
+                      <>
+                        <Button variant="outline" size="sm" onClick={() => handleDownloadPDF(req, false)}>
+                          Download Request
+                        </Button>
+                        <Button 
+                          variant="default" 
+                          size="sm" 
+                          onClick={() => handleDownloadPDF(req, true)}
+                          className="animate-pulse ring-2 ring-primary/50 ring-offset-2 font-semibold"
+                        >
+                          Download Official Quote
+                        </Button>
+                      </>
+                    ) : (
+                      <Button variant="outline" size="sm" onClick={() => handleDownloadPDF(req, false)}>
+                        Download Request
+                      </Button>
+                    )}
+                    
                     <Button variant="outline" size="sm" asChild>
-                      <Link to="/customer/build-menu" search={{ edit: req.id }}>
-                        Edit Menu
+                      <Link to="/customer/build-menu" search={{ edit: req.id }} className="flex items-center gap-2">
+                        <Edit2 size={14} />
+                        <span className="hidden sm:inline">Edit Menu</span>
                       </Link>
                     </Button>
-                    <Button variant="default" size="sm" onClick={() => handleDownloadPDF(req)}>
-                      Download PDF
-                    </Button>
-                    <Button variant="destructive" size="sm" onClick={() => handleDeleteQuote(req.id)}>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={() => handleDeleteQuote(req.id)}
+                      className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                    >
                       <Trash2 size={16} />
                     </Button>
                   </div>

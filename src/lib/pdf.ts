@@ -10,11 +10,28 @@ export interface PDFEventData {
   tableData: (string | number)[][]; // ['#', 'Item Name', 'Category', 'Description']
 }
 
+export interface PricingItemData {
+  name: string;
+  category: string;
+  quantity: number;
+  pricePerPlate: number;
+  discount: number;
+}
+
+export interface EventPricingData {
+  strategy: 'itemized' | 'per_plate';
+  perPlatePrice: number;
+  perPlateQuantity: number;
+  perPlateDiscount: number;
+  items: PricingItemData[];
+}
+
 export interface PDFQuoteData {
   customerName: string;
   customerEmail: string;
   mobile: string;
   events: PDFEventData[];
+  pricing?: Record<string, EventPricingData>;
 }
 
 export const generateQuotePDF = async (data: PDFQuoteData) => {
@@ -169,6 +186,166 @@ export const generateQuotePDF = async (data: PDFQuoteData) => {
     }
   }
 
+  // --- Pricing Data Generation ---
+  if (data.pricing && Object.keys(data.pricing).length > 0) {
+    doc.addPage();
+    currentY = 20;
+
+    // Title for Pricing
+    doc.setFillColor(primary[0], primary[1], primary[2]);
+    doc.rect(20, currentY - 8, pageWidth - 40, 16, 'F');
+    
+    doc.setFontSize(14);
+    doc.setTextColor(255, 255, 255);
+    doc.setFont("helvetica", "bold");
+    doc.text("COST ESTIMATION", pageWidth / 2, currentY + 3, { align: 'center' });
+    currentY += 20;
+    
+    let globalSubtotal = 0;
+    let globalDiscount = 0;
+    let grandTotal = 0;
+
+    for (const [eventName, evState] of Object.entries(data.pricing)) {
+      const items = evState.items || [];
+      if (!items || items.length === 0) continue;
+
+      if (currentY + 20 > pageHeight - 40) {
+        doc.addPage();
+        currentY = 20;
+      }
+      
+      doc.setFontSize(12);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(textDark[0], textDark[1], textDark[2]);
+      doc.text(`Event: ${eventName.toUpperCase()}`, 20, currentY);
+      currentY += 6;
+      
+      let eventTotal = 0;
+
+      if (evState.strategy === 'per_plate') {
+        const qty = evState.perPlateQuantity || 0;
+        const price = evState.perPlatePrice || 0;
+        const disc = evState.perPlateDiscount || 0;
+        
+        const itemBaseTotal = qty * price;
+        const itemDiscountAmt = itemBaseTotal * (disc / 100);
+        
+        eventTotal = itemBaseTotal - itemDiscountAmt;
+        globalSubtotal += itemBaseTotal;
+        globalDiscount += itemDiscountAmt;
+        
+        const head = disc > 0 
+          ? [['Guests', 'Price/Plate', 'Discount (%)', 'Event Total']]
+          : [['Guests', 'Price/Plate', 'Event Total']];
+          
+        const body = disc > 0
+          ? [[qty, `Rs ${price}`, `${disc}%`, `Rs ${Math.max(0, eventTotal).toLocaleString(undefined, { maximumFractionDigits: 0 })}`]]
+          : [[qty, `Rs ${price}`, `Rs ${Math.max(0, eventTotal).toLocaleString(undefined, { maximumFractionDigits: 0 })}`]];
+
+        // Draw Event Summary Table
+        autoTable(doc, {
+          startY: currentY,
+          head: head,
+          body: body,
+          theme: 'grid',
+          headStyles: { fillColor: primary, textColor: 255, fontStyle: 'bold' },
+          alternateRowStyles: { fillColor: bgWarm },
+          styles: { fontSize: 10, cellPadding: 4, lineColor: borderCol },
+          margin: { left: 20, right: 20 },
+        });
+        
+        currentY = (doc as any).lastAutoTable.finalY + 15;
+        
+      } else {
+        // Determine if this event has any discount
+        const hasDiscount = items.some(item => (item.discount || 0) > 0);
+        
+        const head = hasDiscount 
+          ? [['S.No', 'Type', 'Qty', 'Price/Plate', 'Discount %', 'Total']]
+          : [['S.No', 'Type', 'Qty', 'Price/Plate', 'Total']];
+          
+        const body = items.map((item, idx) => {
+          const itemBaseTotal = item.quantity * item.pricePerPlate;
+          const itemDiscountAmt = itemBaseTotal * ((item.discount || 0) / 100);
+          
+          const lineTotal = itemBaseTotal - itemDiscountAmt;
+          const totalValue = Math.max(0, lineTotal);
+          eventTotal += totalValue;
+          
+          globalSubtotal += itemBaseTotal;
+          globalDiscount += itemDiscountAmt;
+          
+          const typeStr = `${item.name}\n(${item.category})`;
+          if (hasDiscount) {
+            return [idx + 1, typeStr, item.quantity, `Rs ${item.pricePerPlate}`, `${item.discount || 0}%`, `Rs ${totalValue.toLocaleString(undefined, { maximumFractionDigits: 0 })}`];
+          } else {
+            return [idx + 1, typeStr, item.quantity, `Rs ${item.pricePerPlate}`, `Rs ${totalValue.toLocaleString(undefined, { maximumFractionDigits: 0 })}`];
+          }
+        });
+        
+        autoTable(doc, {
+          startY: currentY,
+          head: head,
+          body: body,
+          theme: 'grid',
+          headStyles: { fillColor: primary, textColor: 255, fontStyle: 'bold' },
+          alternateRowStyles: { fillColor: bgWarm },
+          styles: { fontSize: 9, cellPadding: 4, lineColor: borderCol },
+          margin: { top: 20, bottom: 40, left: 20, right: 20 },
+        });
+        
+        currentY = (doc as any).lastAutoTable.finalY + 7;
+        
+        // Print event total below table
+        doc.setFontSize(10);
+        doc.setFont("helvetica", "bold");
+        doc.setTextColor(textDark[0], textDark[1], textDark[2]);
+        doc.text(`Total for ${eventName}: Rs ${eventTotal.toLocaleString(undefined, { maximumFractionDigits: 0 })}`, pageWidth - 20, currentY, { align: "right" });
+        currentY += 15;
+      }
+      
+      grandTotal += eventTotal;
+    }
+    
+    // Invoice Style Totals
+    if (currentY + 40 > pageHeight - 40) {
+      doc.addPage();
+      currentY = 20;
+    }
+
+    const startX = pageWidth - 80;
+    const lineX = pageWidth - 20;
+    
+    doc.setFontSize(10);
+    doc.setTextColor(textDark[0], textDark[1], textDark[2]);
+    
+    // Subtotal
+    doc.setFont("helvetica", "normal");
+    doc.text("Subtotal:", startX, currentY);
+    doc.text(`Rs ${globalSubtotal.toLocaleString(undefined, { maximumFractionDigits: 0 })}`, lineX, currentY, { align: "right" });
+    currentY += 8;
+
+    // Discount
+    if (globalDiscount > 0) {
+      doc.text("Total Discount:", startX, currentY);
+      doc.text(`- Rs ${globalDiscount.toLocaleString(undefined, { maximumFractionDigits: 0 })}`, lineX, currentY, { align: "right" });
+      currentY += 8;
+    }
+    
+    // Line separator
+    doc.setDrawColor(borderCol[0], borderCol[1], borderCol[2]);
+    doc.line(startX, currentY - 3, lineX, currentY - 3);
+    
+    // Grand Total
+    doc.setFontSize(12);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(primary[0], primary[1], primary[2]);
+    doc.text("GRAND TOTAL:", startX, currentY + 3);
+    doc.text(`Rs ${grandTotal.toLocaleString(undefined, { maximumFractionDigits: 0 })}`, lineX, currentY + 3, { align: "right" });
+    
+    currentY += 25;
+  }
+
   // Check if signoff needs a new page
   if (currentY + 10 > pageHeight - 40) {
     doc.addPage();
@@ -178,7 +355,12 @@ export const generateQuotePDF = async (data: PDFQuoteData) => {
   // --- Sign off ---
   doc.setFont("helvetica", "italic");
   doc.setTextColor(textMuted[0], textMuted[1], textMuted[2]);
-  doc.text("Thank you for choosing Brinda Catering. We will get back to you with a quote soon.", pageWidth / 2, currentY, { align: "center" });
+  
+  if (data.pricing && Object.keys(data.pricing).length > 0) {
+    doc.text("Thank you for choosing Brinda Catering. Please review the estimated costs above.", pageWidth / 2, currentY, { align: "center" });
+  } else {
+    doc.text("Thank you for choosing Brinda Catering. We will get back to you with a quote soon.", pageWidth / 2, currentY, { align: "center" });
+  }
 
   // --- Footer on all pages ---
   const pageCount = (doc as any).internal.getNumberOfPages();
