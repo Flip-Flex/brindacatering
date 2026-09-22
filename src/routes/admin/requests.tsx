@@ -25,6 +25,17 @@ function AdminRequestsPage() {
   const [statusFilter, setStatusFilter] = useState('all');
   const [sortBy, setSortBy] = useState('newest');
   const [refreshing, setRefreshing] = useState(false);
+  
+  const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
+
+  const toggleExpand = (id: string) => {
+    setExpandedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
 
   const fetchRequests = async (isRefresh = false) => {
     if (isRefresh) setRefreshing(true);
@@ -70,19 +81,51 @@ function AdminRequestsPage() {
 
   const handleDownloadPDF = async (req: any) => {
     try {
-      const tableData: any[][] = [];
-      if (req.selectedItems && Array.isArray(req.selectedItems)) {
-        req.selectedItems.forEach((item: any, index: number) => {
-          // Capitalize category ID for display
-          const catName = item.category ? item.category.charAt(0).toUpperCase() + item.category.slice(1) : 'Other';
-          const fullItem = menuItems.find(mi => mi.id === item.id);
-          tableData.push([index + 1, item.name, catName, fullItem?.description || '']);
+      let pdfEvents: any[] = [];
+
+      if (req.events && Array.isArray(req.events)) {
+        // Multi-event payload
+        pdfEvents = req.events.map((ev: any) => {
+          let tableData: any[][] = [];
+          if (ev.selectedItems && Array.isArray(ev.selectedItems)) {
+            ev.selectedItems.forEach((item: any, index: number) => {
+              const catName = item.category ? item.category.charAt(0).toUpperCase() + item.category.slice(1) : 'Other';
+              tableData.push([index + 1, item.name, catName, '']);
+            });
+          }
+          if (ev.customFoods && Array.isArray(ev.customFoods)) {
+            ev.customFoods.forEach((food: string, index: number) => {
+              tableData.push([tableData.length + 1, food, 'Custom Request', '']);
+            });
+          }
+          return {
+            eventName: ev.eventName || 'Event',
+            eventDate: ev.eventDate || '',
+            guestCount: ev.guestCount || '',
+            customNotes: ev.notes || '',
+            tableData
+          };
         });
-      }
-      
-      if (req.customFoods && Array.isArray(req.customFoods)) {
-        req.customFoods.forEach((food: string, index: number) => {
-          tableData.push([tableData.length + 1, food, 'Custom Request', '']);
+      } else {
+        // Legacy flat payload fallback
+        let tableData: any[][] = [];
+        if (req.selectedItems && Array.isArray(req.selectedItems)) {
+          req.selectedItems.forEach((item: any, index: number) => {
+            const catName = item.category ? item.category.charAt(0).toUpperCase() + item.category.slice(1) : 'Other';
+            tableData.push([index + 1, item.name, catName, '']);
+          });
+        }
+        if (req.customFoods && Array.isArray(req.customFoods)) {
+          req.customFoods.forEach((food: string, index: number) => {
+            tableData.push([tableData.length + 1, food, 'Custom Request', '']);
+          });
+        }
+        pdfEvents.push({
+          eventName: 'Main Event',
+          eventDate: req.eventDate || 'TBD',
+          guestCount: req.guestCount || 'TBD',
+          customNotes: req.customNotes || '',
+          tableData
         });
       }
 
@@ -90,10 +133,7 @@ function AdminRequestsPage() {
         customerName: req.userName || 'Unknown Customer',
         customerEmail: req.userEmail || 'Unknown Email',
         mobile: req.mobileNumber || '',
-        eventDate: req.eventDate || 'TBD',
-        guestCount: req.guestCount || 'TBD',
-        customNotes: req.customNotes || '',
-        tableData
+        events: pdfEvents
       });
       toast.success("Quote PDF generated successfully.");
     } catch (err) {
@@ -204,84 +244,124 @@ function AdminRequestsPage() {
             {requests.length === 0 ? "No requests received yet." : "No requests match your filters."}
           </div>
         ) : (
-          filteredRequests.map(req => (
-            <Card key={req.id} className="overflow-hidden">
-              <CardHeader className="bg-muted/30 border-b border-border/40 pb-4">
-                <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
-                  <div>
-                    <CardTitle className="text-xl">{req.userName || 'Unknown Customer'}</CardTitle>
-                    <CardDescription className="flex items-center gap-4 mt-2">
-                      <span className="flex items-center gap-1.5"><Mail size={14} /> {req.userEmail}</span>
-                      {req.mobileNumber && (
-                        <span className="flex items-center gap-1.5 font-medium text-foreground">
-                          {req.mobileNumber}
-                        </span>
-                      )}
-                    </CardDescription>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <Button variant="outline" size="sm" onClick={() => handleDownloadPDF(req)} className="hidden sm:flex bg-background">
-                      <FileDown size={16} className="mr-2 text-primary" />
-                      View PDF
-                    </Button>
-                    <Select value={req.status || 'pending'} onValueChange={(val) => updateStatus(req.id, val)}>
-                      <SelectTrigger className="w-[140px] h-9">
-                        <SelectValue placeholder="Status" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="pending">Pending</SelectItem>
-                        <SelectItem value="reviewed">Reviewed</SelectItem>
-                        <SelectItem value="quoted">Quoted</SelectItem>
-                        <SelectItem value="completed">Completed</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      onClick={() => deleteRequest(req.id, req.userName || 'Unknown')} 
-                      className="text-destructive hover:text-destructive hover:bg-destructive/10 h-9 w-9 p-0"
-                    >
-                      <Trash2 size={16} />
-                    </Button>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent className="pt-6">
-                <div className="flex flex-wrap gap-6 mb-6">
-                  <div className="flex items-center gap-2 text-sm">
-                    <Calendar className="text-primary" size={16} />
-                    <span className="font-medium text-foreground">Event Date:</span> 
-                    <span className="text-muted-foreground">{req.eventDate}</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-sm">
-                    <Users className="text-primary" size={16} />
-                    <span className="font-medium text-foreground">Guests:</span> 
-                    <span className="text-muted-foreground">{req.guestCount}</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-sm">
-                    <Clock className="text-muted-foreground" size={16} />
-                    <span className="text-muted-foreground">
-                      Submitted: {req.createdAt?.toDate ? format(req.createdAt.toDate(), 'PP p') : 'Unknown'}
-                    </span>
-                  </div>
-                </div>
+          filteredRequests.map(req => {
+            const hasEvents = req.events && req.events.length > 0;
+            const displayDate = hasEvents ? req.events.map((e: any) => e.eventDate).filter(Boolean).join(', ') : (req.eventDate || 'TBD');
+            const displayGuests = hasEvents ? req.events.map((e: any) => e.guestCount).filter(Boolean).join(' / ') : (req.guestCount || 'TBD');
+            
+            // Flatten items for display
+            let allItems: { name: string, category: string, eventName?: string }[] = [];
+            if (hasEvents) {
+              req.events.forEach((ev: any) => {
+                if (ev.selectedItems) {
+                  ev.selectedItems.forEach((item: any) => {
+                    allItems.push({ ...item, eventName: ev.eventName });
+                  });
+                }
+                if (ev.customFoods) {
+                  ev.customFoods.forEach((food: string) => {
+                    allItems.push({ name: food, category: 'custom', eventName: ev.eventName });
+                  });
+                }
+              });
+            } else {
+              if (req.selectedItems) {
+                allItems = [...req.selectedItems];
+              }
+              if (req.customFoods) {
+                req.customFoods.forEach((food: string) => {
+                  allItems.push({ name: food, category: 'custom' });
+                });
+              }
+            }
 
-                <div>
-                  <h4 className="font-medium mb-3 text-sm uppercase tracking-wider text-muted-foreground">Selected Items ({req.selectedItems?.length || 0})</h4>
-                  <div className="bg-muted/20 rounded-lg border border-border/40 p-4 max-h-[200px] overflow-y-auto">
-                    <ul className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-2">
-                      {req.selectedItems?.map((item: any, i: number) => (
-                        <li key={i} className="text-sm flex items-start gap-2">
-                          <span className="text-primary mt-0.5">•</span>
-                          {item.name}
-                        </li>
-                      ))}
-                    </ul>
+            return (
+              <Card key={req.id} className="overflow-hidden">
+                <CardHeader className="bg-muted/30 border-b border-border/40 pb-4">
+                  <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+                    <div>
+                      <CardTitle className="text-xl">{req.userName || 'Unknown Customer'}</CardTitle>
+                      <CardDescription className="flex items-center gap-4 mt-2">
+                        <span className="flex items-center gap-1.5"><Mail size={14} /> {req.userEmail}</span>
+                        {req.mobileNumber && (
+                          <span className="flex items-center gap-1.5 font-medium text-foreground">
+                            {req.mobileNumber}
+                          </span>
+                        )}
+                      </CardDescription>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <Button variant="outline" size="sm" onClick={() => handleDownloadPDF(req)} className="hidden sm:flex bg-background">
+                        <FileDown size={16} className="mr-2 text-primary" />
+                        View PDF
+                      </Button>
+                      <Select value={req.status || 'pending'} onValueChange={(val) => updateStatus(req.id, val)}>
+                        <SelectTrigger className="w-[140px] h-9">
+                          <SelectValue placeholder="Status" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="pending">Pending</SelectItem>
+                          <SelectItem value="reviewed">Reviewed</SelectItem>
+                          <SelectItem value="quoted">Quoted</SelectItem>
+                          <SelectItem value="completed">Completed</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        onClick={() => deleteRequest(req.id, req.userName || 'Unknown')} 
+                        className="text-destructive hover:text-destructive hover:bg-destructive/10 h-9 w-9 p-0"
+                      >
+                        <Trash2 size={16} />
+                      </Button>
+                    </div>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))
+                </CardHeader>
+                <CardContent className="pt-6">
+                  <div className="flex flex-wrap gap-6 mb-6">
+                    <div className="flex items-center gap-2 text-sm">
+                      <Calendar className="text-primary" size={16} />
+                      <span className="font-medium text-foreground">Event Dates:</span> 
+                      <span className="text-muted-foreground">{displayDate}</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm">
+                      <Users className="text-primary" size={16} />
+                      <span className="font-medium text-foreground">Guests:</span> 
+                      <span className="text-muted-foreground">{displayGuests}</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm">
+                      <Clock className="text-muted-foreground" size={16} />
+                      <span className="text-muted-foreground">
+                        Submitted: {req.createdAt?.toDate ? format(req.createdAt.toDate(), 'PP p') : 'Unknown'}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="flex items-center justify-between mb-3">
+                      <h4 className="font-medium text-sm uppercase tracking-wider text-muted-foreground">Selected Items ({allItems.length})</h4>
+                      <Button variant="ghost" size="sm" onClick={() => toggleExpand(req.id)} className="h-8 text-xs text-primary hover:text-primary/80">
+                        {expandedIds.has(req.id) ? 'Hide Details' : 'Show More'}
+                      </Button>
+                    </div>
+                    
+                    {expandedIds.has(req.id) && (
+                      <div className="bg-muted/20 rounded-lg border border-border/40 p-4 max-h-[300px] overflow-y-auto animate-in slide-in-from-top-2 duration-200">
+                        <ul className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-2">
+                          {allItems.map((item, i) => (
+                            <li key={i} className="text-sm flex items-start gap-2">
+                              <span className="text-primary mt-0.5">•</span>
+                              {item.name}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })
         )}
       </div>
     </div>

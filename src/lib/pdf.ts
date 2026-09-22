@@ -2,18 +2,23 @@ import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { business } from '@/data/business';
 
-export interface PDFQuoteData {
-  customerName: string;
-  customerEmail: string;
-  mobile: string;
+export interface PDFEventData {
+  eventName: string;
   eventDate: string;
   guestCount: string;
   customNotes: string;
   tableData: (string | number)[][]; // ['#', 'Item Name', 'Category', 'Description']
 }
 
+export interface PDFQuoteData {
+  customerName: string;
+  customerEmail: string;
+  mobile: string;
+  events: PDFEventData[];
+}
+
 export const generateQuotePDF = async (data: PDFQuoteData) => {
-  const { customerName, customerEmail, mobile, eventDate, guestCount, customNotes, tableData } = data;
+  const { customerName, customerEmail, mobile, events } = data;
   
   const doc = new jsPDF();
   const pageWidth = doc.internal.pageSize.getWidth();
@@ -46,7 +51,6 @@ export const generateQuotePDF = async (data: PDFQuoteData) => {
       }));
     
     // Adjust dimensions as needed based on the logo's aspect ratio
-    // The header is 28px tall. Let's make the logo 22px tall.
     doc.addImage(logoBase64, 'PNG', 20, 3, 22, 22);
     
     // Add company name next to the logo
@@ -71,98 +75,102 @@ export const generateQuotePDF = async (data: PDFQuoteData) => {
   // --- Details Box ---
   doc.setDrawColor(borderCol[0], borderCol[1], borderCol[2]);
   doc.setFillColor(bgWarm[0], bgWarm[1], bgWarm[2]);
-  doc.roundedRect(20, 52, pageWidth - 40, 32, 2, 2, 'FD');
+  doc.roundedRect(20, 52, pageWidth - 40, 22, 2, 2, 'FD');
   
   // Details Headers
   doc.setFontSize(10);
   doc.setTextColor(textMuted[0], textMuted[1], textMuted[2]);
   doc.setFont("helvetica", "bold");
   doc.text("CUSTOMER DETAILS", 24, 60);
-  doc.text("EVENT DETAILS", pageWidth / 2, 60);
   
   doc.setFont("helvetica", "normal");
   const labelOffset = 15;
-  const rightCol = pageWidth / 2;
+  const col2 = 80;
+  const col3 = 140;
 
-  // Customer Col
   doc.setTextColor(textMuted[0], textMuted[1], textMuted[2]);
   doc.text("Name:", 24, 66);
   doc.setTextColor(textDark[0], textDark[1], textDark[2]);
   doc.text(customerName, 24 + labelOffset, 66);
 
   doc.setTextColor(textMuted[0], textMuted[1], textMuted[2]);
-  doc.text("Email:", 24, 72);
+  doc.text("Email:", col2, 66);
   doc.setTextColor(textDark[0], textDark[1], textDark[2]);
-  doc.text(customerEmail, 24 + labelOffset, 72);
+  doc.text(customerEmail, col2 + labelOffset, 66);
 
   doc.setTextColor(textMuted[0], textMuted[1], textMuted[2]);
-  doc.text("Mobile:", 24, 78);
+  doc.text("Mobile:", col3, 66);
   doc.setTextColor(textDark[0], textDark[1], textDark[2]);
-  doc.text(mobile, 24 + labelOffset, 78);
+  doc.text(mobile, col3 + labelOffset, 66);
 
-  // Event Col
-  doc.setTextColor(textMuted[0], textMuted[1], textMuted[2]);
-  doc.text("Date:", rightCol, 66);
-  doc.setTextColor(textDark[0], textDark[1], textDark[2]);
-  doc.text(eventDate, rightCol + labelOffset, 66);
+  let currentY = 85;
 
-  doc.setTextColor(textMuted[0], textMuted[1], textMuted[2]);
-  doc.text("Guests:", rightCol, 72);
-  doc.setTextColor(textDark[0], textDark[1], textDark[2]);
-  doc.text(guestCount, rightCol + labelOffset, 72);
-  
-  // --- Menu Table ---
-  let finalY = 90;
-  
-  if (tableData.length > 0) {
-    autoTable(doc, {
-      startY: 95,
-      head: [['#', 'Item Name', 'Category', 'Description']],
-      body: tableData,
-      theme: 'grid',
-      headStyles: { fillColor: primary, textColor: 255, fontStyle: 'bold' },
-      alternateRowStyles: { fillColor: bgWarm },
-      styles: { fontSize: 10, cellPadding: 4, lineColor: borderCol },
-      margin: { left: 20, right: 20 },
-    });
-
-    finalY = (doc as any).lastAutoTable.finalY || 95;
-  }
-
-  let currentY = finalY + 15;
-
-  // --- Special Instructions Box ---
-  if (customNotes.trim()) {
-    // Check if we need to add a new page for the notes
-    if (currentY + 50 > pageHeight - 20) {
+  // --- Loop through Events ---
+  for (const event of events) {
+    // Check if we need to add a new page for the event header
+    if (currentY + 30 > pageHeight - 40) {
       doc.addPage();
       currentY = 20;
     }
 
-    doc.setFontSize(11);
+    doc.setFontSize(14);
     doc.setFont("helvetica", "bold");
-    doc.setTextColor(textDark[0], textDark[1], textDark[2]);
-    doc.text("SPECIAL INSTRUCTIONS:", 20, currentY);
+    doc.setTextColor(primary[0], primary[1], primary[2]);
+    doc.text(event.eventName.toUpperCase(), 20, currentY);
     
-    currentY += 4;
+    currentY += 6;
     doc.setFontSize(10);
     doc.setFont("helvetica", "normal");
+    doc.setTextColor(textMuted[0], textMuted[1], textMuted[2]);
+    doc.text(`Date: ${event.eventDate || 'TBD'}  |  Guests: ${event.guestCount || 'TBD'}`, 20, currentY);
     
-    const splitNotes = doc.splitTextToSize(customNotes, pageWidth - 48);
-    const boxHeight = (splitNotes.length * 5) + 10;
-    
-    doc.setDrawColor(accent[0], accent[1], accent[2]);
-    doc.setFillColor(bgWarm[0], bgWarm[1], bgWarm[2]);
-    doc.roundedRect(20, currentY, pageWidth - 40, Math.max(20, boxHeight), 2, 2, 'FD');
-    
-    doc.setTextColor(textDark[0], textDark[1], textDark[2]);
-    doc.text(splitNotes, 24, currentY + 7);
-    
-    currentY += Math.max(20, boxHeight) + 15;
+    currentY += 8;
+
+    if (event.tableData.length > 0) {
+      autoTable(doc, {
+        startY: currentY,
+        head: [['#', 'Item Name', 'Category', 'Description']],
+        body: event.tableData,
+        theme: 'grid',
+        headStyles: { fillColor: primary, textColor: 255, fontStyle: 'bold' },
+        alternateRowStyles: { fillColor: bgWarm },
+        styles: { fontSize: 10, cellPadding: 4, lineColor: borderCol },
+        margin: { top: 20, bottom: 40, left: 20, right: 20 },
+      });
+      currentY = (doc as any).lastAutoTable.finalY + 10;
+    }
+
+    if (event.customNotes.trim()) {
+      if (currentY + 40 > pageHeight - 40) {
+        doc.addPage();
+        currentY = 20;
+      }
+  
+      doc.setFontSize(11);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(textDark[0], textDark[1], textDark[2]);
+      doc.text(`NOTES FOR ${event.eventName.toUpperCase()}:`, 20, currentY);
+      
+      currentY += 4;
+      doc.setFontSize(10);
+      doc.setFont("helvetica", "normal");
+      
+      const splitNotes = doc.splitTextToSize(event.customNotes, pageWidth - 48);
+      const boxHeight = (splitNotes.length * 5) + 10;
+      
+      doc.setDrawColor(accent[0], accent[1], accent[2]);
+      doc.setFillColor(bgWarm[0], bgWarm[1], bgWarm[2]);
+      doc.roundedRect(20, currentY, pageWidth - 40, Math.max(20, boxHeight), 2, 2, 'FD');
+      
+      doc.setTextColor(textDark[0], textDark[1], textDark[2]);
+      doc.text(splitNotes, 24, currentY + 7);
+      
+      currentY += Math.max(20, boxHeight) + 15;
+    }
   }
 
   // Check if signoff needs a new page
-  if (currentY + 10 > pageHeight - 20) {
+  if (currentY + 10 > pageHeight - 40) {
     doc.addPage();
     currentY = 20;
   }
@@ -194,5 +202,6 @@ export const generateQuotePDF = async (data: PDFQuoteData) => {
   }
 
   // Save PDF
-  doc.save(`Brinda_Caterers_Quote_${eventDate.replace(/\//g, '-') || 'Download'}.pdf`);
+  const dateStr = new Date().toISOString().split('T')[0];
+  doc.save(`Brinda_Caterers_Quote_${dateStr}.pdf`);
 };
