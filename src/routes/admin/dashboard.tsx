@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { LogOut, Plus, Pencil, Trash2, ImageIcon } from 'lucide-react';
+import { LogOut, Plus, Pencil, Trash2, ImageIcon, ChevronUp, ChevronDown } from 'lucide-react';
 import { MenuItem, MenuCategory, menuCategories as defaultCategories } from '@/data/menu';
 import { Reveal } from "@/components/site/Reveal";
 
@@ -209,6 +209,31 @@ function AdminDashboard() {
     return items.filter(item => item.category === categoryId);
   };
 
+  const moveCategory = async (index: number, direction: 'up' | 'down') => {
+    if (!db) return;
+    if ((direction === 'up' && index === 0) || (direction === 'down' && index === categories.length - 1)) return;
+    
+    const newCategories = [...categories];
+    const targetIndex = direction === 'up' ? index - 1 : index + 1;
+    
+    const currentCategory = newCategories[index];
+    const targetCategory = newCategories[targetIndex];
+    if (!currentCategory || !targetCategory) return;
+    
+    const currentOrder = currentCategory.order ?? index;
+    const targetOrder = targetCategory.order ?? targetIndex;
+    
+    currentCategory.order = targetOrder;
+    targetCategory.order = currentOrder;
+
+    try {
+      await updateDoc(doc(db, 'menuCategories', currentCategory.id), { order: currentCategory.order });
+      await updateDoc(doc(db, 'menuCategories', targetCategory.id), { order: targetCategory.order });
+    } catch (error) {
+      console.error("Failed to reorder", error);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background px-5 py-8 sm:px-8 lg:px-12 lg:py-12">
       <div className="max-w-[1600px] mx-auto space-y-8">
@@ -373,7 +398,7 @@ function AdminDashboard() {
           <div className="py-12 text-center text-muted-foreground">Loading menu items...</div>
         ) : (
           <div className="space-y-32">
-            {categories.map((category) => {
+            {categories.map((category, index) => {
               const categoryItems = getItemsForCategory(category.id);
               return (
                 <section
@@ -383,13 +408,23 @@ function AdminDashboard() {
                 >
                   <Reveal className="mb-12 group/cat">
                     <div className="flex items-start justify-between">
-                      <div>
-                        <h2 className="font-display text-4xl sm:text-5xl">
-                          {category.name}
-                        </h2>
-                        <p className="mt-4 max-w-2xl text-base text-muted-foreground sm:text-lg">
-                          {category.description}
-                        </p>
+                      <div className="flex items-start gap-4">
+                        <div className="flex flex-col gap-1 mt-1">
+                          <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-primary" onClick={() => moveCategory(index, 'up')} disabled={index === 0}>
+                            <ChevronUp className="w-4 h-4" />
+                          </Button>
+                          <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-primary" onClick={() => moveCategory(index, 'down')} disabled={index === categories.length - 1}>
+                            <ChevronDown className="w-4 h-4" />
+                          </Button>
+                        </div>
+                        <div>
+                          <h2 className="font-display text-4xl sm:text-5xl">
+                            {category.name}
+                          </h2>
+                          <p className="mt-4 max-w-2xl text-base text-muted-foreground sm:text-lg">
+                            {category.description}
+                          </p>
+                        </div>
                       </div>
                       <Button 
                         variant="ghost" 
