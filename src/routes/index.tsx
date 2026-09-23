@@ -269,7 +269,7 @@ function Home() {
               >
                 <div className="aspect-[3/4] w-full overflow-hidden">
                   <img
-                    src={highlight.image}
+                    src={highlight.image?.startsWith('/src/assets/') ? ((import.meta.glob('/src/assets/*.{jpg,png,jpeg,webp}', { eager: true, import: 'default' }) as Record<string, string>)[highlight.image] || highlight.image) : highlight.image}
                     alt={highlight.title}
                     loading="lazy"
                     decoding="async"
@@ -314,7 +314,7 @@ function Home() {
               <Reveal as="li" key={item.name || item.id} delay={index * 80}>
                 <div className="group overflow-hidden rounded-xl shadow-sm">
                   <img
-                    src={item.image}
+                    src={item.image?.startsWith('/src/assets/') ? ((import.meta.glob('/src/assets/*.{jpg,png,jpeg,webp}', { eager: true, import: 'default' }) as Record<string, string>)[item.image] || item.image) : item.image}
                     alt={item.name}
                     loading="lazy"
                     decoding="async"
