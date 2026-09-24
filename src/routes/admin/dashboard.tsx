@@ -289,8 +289,9 @@ function AdminDashboard() {
 
   const handleDeleteCategory = async (id: string, categoryName: string) => {
     const categoryItems = getItemsForCategory(id);
-    if (categoryItems.length > 0) {
-      alert(`Cannot delete category "${categoryName}" because it contains ${categoryItems.length} items. Please delete or move these items to another category first.`);
+    const categorySubcats = subcategories.filter(s => s.categoryId === id);
+    if (categoryItems.length > 0 || categorySubcats.length > 0) {
+      alert(`Cannot delete category "${categoryName}" because it contains ${categoryItems.length} items and ${categorySubcats.length} subcategories. Please delete or move them first.`);
       return;
     }
     if (confirm(`Are you sure you want to delete the category "${categoryName}"?`)) {
