@@ -83,6 +83,14 @@ function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const routerState = useRouterState();
   
+  useEffect(() => {
+    window.scrollTo(0, 0);
+    // Force scroll to top on initial load (browser refresh) after data might have rendered
+    const t1 = setTimeout(() => window.scrollTo(0, 0), 100);
+    const t2 = setTimeout(() => window.scrollTo(0, 0), 500);
+    const t3 = setTimeout(() => window.scrollTo(0, 0), 1000);
+    return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
+  }, []);
   const hideLayoutElements = routerState.location.pathname.startsWith('/admin') || routerState.location.pathname.startsWith('/customer') || routerState.location.pathname === '/login';
 
   return (
@@ -96,6 +104,7 @@ function RootComponent() {
       {!hideLayoutElements && <Navbar />}
       <main id="main">
         <Outlet />
+        
       </main>
       {!hideLayoutElements && <Footer />}
       {!hideLayoutElements && <WhatsAppButton />}

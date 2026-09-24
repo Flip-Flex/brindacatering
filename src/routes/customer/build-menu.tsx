@@ -10,7 +10,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogTrigger } from '@/components/ui/dialog';
 import { Check, X, Plus, ChevronRight } from 'lucide-react';
-import { MenuCategory, MenuItem } from '@/data/menu';
+import { MenuCategory, MenuItem, MenuSubcategory } from '@/data/menu';
 
 export const Route = createFileRoute('/customer/build-menu')({
   component: BuildMenuPage,
@@ -52,6 +52,7 @@ function makeEvent(label: string, isCustom = false): EventEntry {
 function BuildMenuPage() {
   const { edit } = Route.useSearch();
   const [categories, setCategories] = useState<MenuCategory[]>([]);
+  const [subcategories, setSubcategories] = useState<MenuSubcategory[]>([]);
   const [items, setItems] = useState<MenuItem[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -80,6 +81,9 @@ function BuildMenuPage() {
       try {
         const catSnapshot = await getDocs(query(collection(db!, 'menuCategories'), orderBy('order')));
         setCategories(catSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }) as MenuCategory));
+
+        const subcatSnapshot = await getDocs(query(collection(db!, 'menuSubcategories'), orderBy('order')));
+        setSubcategories(subcatSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }) as MenuSubcategory));
 
         const itemSnapshot = await getDocs(query(collection(db!, 'menuItems'), orderBy('order')));
         setItems(itemSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }) as MenuItem));
@@ -470,44 +474,75 @@ function BuildMenuPage() {
         </div>
       </div>
 
-      {/* Categories Grid for Active Event */}
-      <div className="space-y-16">
-        {categories.map((cat) => {
+            {/* Categories Grid for Active Event */}
+      <div className="space-y-12">
+        {categories.map((cat, index) => {
           const catItems = items.filter((i) => i.category === cat.id);
           if (catItems.length === 0) return null;
-          return (
-            <div key={cat.id}>
-              <h3 className="text-lg font-bold text-slate-900 mb-6 pb-2 border-b border-slate-200">{cat.name}</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {catItems.map((item) => {
-                  const isSelected = activeEvent.selectedItemIds.has(item.id);
-                  return (
-                    <div 
-                      key={item.id}
-                      onClick={() => toggleItem(item.id)}
-                      className={`relative cursor-pointer p-5 rounded-xl border transition-all duration-200 ${
-                        isSelected 
-                          ? 'border-primary bg-primary/5 shadow-sm ring-1 ring-primary/20' 
-                          : 'border-slate-200 bg-white hover:border-slate-300 hover:shadow-sm'
-                      }`}
-                    >
-                      <div className="flex justify-between items-start gap-3">
-                        <div>
-                          <h4 className="font-semibold text-slate-900">{item.name}</h4>
-                          {item.description && (
-                            <p className="text-sm text-slate-500 mt-1 line-clamp-2">{item.description}</p>
-                          )}
-                        </div>
-                        <div className={`shrink-0 h-6 w-6 rounded-full border flex items-center justify-center transition-colors ${
-                          isSelected ? 'bg-primary border-primary text-primary-foreground' : 'border-slate-300 bg-slate-50'
-                        }`}>
-                          {isSelected && <Check size={14} />}
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
+          
+          const catSubcats = subcategories.filter(s => s.categoryId === cat.id).sort((a,b) => (a.order ?? 0) - (b.order ?? 0));
+          const generalItems = catItems.filter(i => !i.subcategoryId).sort((a,b) => (a.order ?? 0) - (b.order ?? 0));
+
+          const renderItem = (item: MenuItem) => {
+            const isSelected = activeEvent.selectedItemIds.has(item.id);
+            return (
+              <div 
+                key={item.id}
+                onClick={() => toggleItem(item.id)}
+                className={`relative cursor-pointer p-5 rounded-xl border transition-all duration-200 ${
+                  isSelected 
+                    ? 'border-primary bg-primary/5 shadow-sm ring-1 ring-primary/20' 
+                    : 'border-slate-200 bg-white hover:border-slate-300 hover:shadow-sm'
+                }`}
+              >
+                <div className="flex justify-between items-start gap-3">
+                  <div>
+                    <h4 className="font-semibold text-slate-900">{item.name}</h4>
+                    {item.description && (
+                      <p className="text-sm text-slate-500 mt-1 line-clamp-2">{item.description}</p>
+                    )}
+                  </div>
+                  <div className={`shrink-0 h-6 w-6 rounded-full border flex items-center justify-center transition-colors ${
+                    isSelected ? 'bg-primary border-primary text-primary-foreground' : 'border-slate-300 bg-slate-50'
+                  }`}>
+                    {isSelected && <Check size={14} />}
+                  </div>
+                </div>
               </div>
+            );
+          };
+
+          return (
+            <div key={cat.id} className={`p-6 sm:p-10 rounded-[2rem] border border-slate-200/60 ${index % 2 === 0 ? 'bg-orange-50/40' : 'bg-teal-50/40'}`}>
+              <h3 className="text-3xl font-bold text-slate-900 mb-8 pb-4 border-b-2 border-slate-200/80">{cat.name}</h3>
+              
+              {catSubcats.map(subcat => {
+                const subcatItems = catItems.filter(i => i.subcategoryId === subcat.id).sort((a,b) => (a.order ?? 0) - (b.order ?? 0));
+                if (subcatItems.length === 0) return null;
+                return (
+                  <div key={subcat.id} className="mb-10">
+                    <div className="flex items-center mb-6 mt-4">
+                      <h4 className="text-xl font-bold text-primary bg-primary/5 px-4 py-2 rounded-lg border border-primary/20">{subcat.name}</h4>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {subcatItems.map(renderItem)}
+                    </div>
+                  </div>
+                );
+              })}
+
+              {generalItems.length > 0 && (
+                <div className="mb-8 mt-6">
+                  {catSubcats.length > 0 && (
+                    <div className="flex items-center mb-6 mt-4">
+                      <h4 className="text-lg font-semibold text-slate-500 bg-slate-50 px-4 py-2 rounded-lg border border-slate-200">General Items</h4>
+                    </div>
+                  )}
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {generalItems.map(renderItem)}
+                  </div>
+                </div>
+              )}
             </div>
           );
         })}

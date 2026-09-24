@@ -11,7 +11,15 @@ const nonVegImage = "";
  * `tags` are optional and are only rendered when supplied.
  */
 
-export type MenuTag = "Popular" | "Chef's Special" | "Vegetarian" | "Non-Vegetarian" | "Signature";
+export const AVAILABLE_TAGS = [
+  "Vegetarian", "Non-Vegetarian", "Vegan", "Gluten-Free", "Popular", 
+  "Chef's Special", "Signature", "Spicy", "Sweet", "Healthy", 
+  "Bestseller", "New", "Kids Favorite", "Breakfast", "Lunch", 
+  "Dinner", "Snack", "Beverage", "Dessert", "Starter", 
+  "Main Course", "Side Dish"
+] as const;
+
+export type MenuTag = typeof AVAILABLE_TAGS[number];
 
 export type MenuCategory = {
   id: string;
@@ -19,12 +27,20 @@ export type MenuCategory = {
   description: string;
   image?: string;
   alt?: string;
-  order?: number; // Also adding order to be safe for sorting
+  order?: number;
+};
+
+export type MenuSubcategory = {
+  id: string;
+  categoryId: string;
+  name: string;
+  order?: number;
 };
 
 export type MenuItem = {
   id: string;
   category: string;
+  subcategoryId?: string;
   name: string;
   description: string;
   image?: string;
